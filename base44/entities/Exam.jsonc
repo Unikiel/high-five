@@ -1,0 +1,70 @@
+{
+  "name": "Exam",
+  "type": "object",
+  "properties": {
+    "course_id": {
+      "type": "string"
+    },
+    "student_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "practice",
+        "unit",
+        "full"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "answers": {
+      "type": "object"
+    },
+    "score": {
+      "type": "number"
+    },
+    "total_questions": {
+      "type": "number"
+    },
+    "time_limit_minutes": {
+      "type": "number"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "adaptive_difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard",
+        "adaptive"
+      ]
+    }
+  },
+  "required": [
+    "course_id",
+    "student_id",
+    "type"
+  ]
+}

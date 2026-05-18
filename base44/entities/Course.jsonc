@@ -1,0 +1,36 @@
+{
+  "name": "Course",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "exam_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "code"
+  ]
+}

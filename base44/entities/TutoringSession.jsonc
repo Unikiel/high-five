@@ -1,0 +1,54 @@
+{
+  "name": "TutoringSession",
+  "type": "object",
+  "properties": {
+    "tutor_id": {
+      "type": "string"
+    },
+    "student_id": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "scheduled_time": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 60
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "meeting_link": {
+      "type": "string"
+    },
+    "topics_requested": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "tutor_id",
+    "student_id",
+    "scheduled_date",
+    "scheduled_time"
+  ]
+}

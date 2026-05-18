@@ -1,0 +1,39 @@
+{
+  "name": "Enrollment",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "enrolled_at": {
+      "type": "string"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "monthly",
+        "yearly"
+      ]
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "subscription_expires": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "student_id",
+    "course_id"
+  ]
+}

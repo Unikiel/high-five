@@ -1,0 +1,45 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "plan_name": {
+      "type": "string"
+    },
+    "plan_type": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "monthly",
+        "yearly"
+      ]
+    },
+    "price": {
+      "type": "number"
+    },
+    "original_price": {
+      "type": "number"
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 0
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "stripe_price_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "plan_name",
+    "plan_type",
+    "price"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "Question",
+  "type": "object",
+  "properties": {
+    "course_id": {
+      "type": "string"
+    },
+    "unit_id": {
+      "type": "string"
+    },
+    "topic_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "multiple_choice",
+        "free_response"
+      ]
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    "question_text": {
+      "type": "string"
+    },
+    "latex_content": {
+      "type": "string"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "correct_answer": {
+      "type": "string"
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "course_id",
+    "unit_id",
+    "type",
+    "question_text",
+    "correct_answer"
+  ]
+}

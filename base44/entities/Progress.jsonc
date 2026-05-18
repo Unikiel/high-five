@@ -1,0 +1,53 @@
+{
+  "name": "Progress",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "unit_id": {
+      "type": "string"
+    },
+    "topic_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "completed"
+      ],
+      "default": "not_started"
+    },
+    "mastery_score": {
+      "type": "number"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "correct_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_studied": {
+      "type": "string"
+    },
+    "time_spent_minutes": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "student_id",
+    "course_id"
+  ]
+}

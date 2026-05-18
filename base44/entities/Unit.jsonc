@@ -1,0 +1,32 @@
+{
+  "name": "Unit",
+  "type": "object",
+  "properties": {
+    "course_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "unit_number": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "exam_weight_min": {
+      "type": "number"
+    },
+    "exam_weight_max": {
+      "type": "number"
+    },
+    "order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "course_id",
+    "title",
+    "unit_number"
+  ]
+}

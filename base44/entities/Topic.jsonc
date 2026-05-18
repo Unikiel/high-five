@@ -1,0 +1,48 @@
+{
+  "name": "Topic",
+  "type": "object",
+  "properties": {
+    "unit_id": {
+      "type": "string"
+    },
+    "course_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "topic_number": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "key_concepts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "latex_formulas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lesson_content": {
+      "type": "string"
+    },
+    "cheatsheet": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "unit_id",
+    "course_id",
+    "title",
+    "topic_number"
+  ]
+}
