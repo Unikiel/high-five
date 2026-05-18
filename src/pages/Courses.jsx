@@ -127,10 +127,9 @@ export default function Courses() {
                     size="sm"
                     variant="outline"
                     className="w-full hover:text-white transition-colors"
-                    style={{ "--hover-bg": course.color } as any}
                     onClick={() => handleEnroll(course.code)}
-                    onMouseEnter={e => { (e.target as HTMLElement).style.backgroundColor = course.color; (e.target as HTMLElement).style.borderColor = course.color; (e.target as HTMLElement).style.color = "white"; }}
-                    onMouseLeave={e => { (e.target as HTMLElement).style.backgroundColor = ""; (e.target as HTMLElement).style.borderColor = ""; (e.target as HTMLElement).style.color = ""; }}
+                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = course.color; e.currentTarget.style.borderColor = course.color; e.currentTarget.style.color = "white"; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = ""; e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; }}
                   >
                     Enroll Now
                   </Button>
