@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,8 @@ import GoogleIcon from "@/components/GoogleIcon";
 export default function Login() {
   const [searchParams] = useSearchParams();
   const passwordJustSet = searchParams.get("message") === "password_set";
+  const navigate = useNavigate();
+  const { checkUserAuth } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +26,9 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      // Refresh user in context, then SPA-navigate (no full page reload)
+      await checkUserAuth({ silent: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
