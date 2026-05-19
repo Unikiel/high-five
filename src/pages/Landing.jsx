@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 import { base44 } from "@/api/base44Client";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
 
@@ -48,10 +49,14 @@ export default function Landing() {
           {currentUser ? (
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                  {currentUser.full_name?.[0] || currentUser.email?.[0] || "?"}
-                </div>
-                <span className="hidden sm:block font-medium text-foreground">{currentUser.full_name || currentUser.email}</span>
+                {currentUser.avatar_url ? (
+                  <img src={currentUser.avatar_url} alt={getDisplayName(currentUser)} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                    {getInitial(currentUser)}
+                  </div>
+                )}
+                <span className="hidden sm:block font-medium text-foreground">{getDisplayName(currentUser)}</span>
               </div>
               <Link to="/dashboard"><Button size="sm" className="gap-1.5"><LayoutDashboard className="w-3.5 h-3.5" />Dashboard</Button></Link>
               <Button size="sm" variant="ghost" onClick={handleLogout} className="gap-1.5"><LogOut className="w-3.5 h-3.5" />Logout</Button>

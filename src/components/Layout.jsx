@@ -3,6 +3,7 @@ import { Link, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import {
   Home, BookOpen, Target, TrendingUp, Calendar, 
   Settings, LogOut, Menu, X, Sun, Moon, Monitor,
@@ -122,11 +123,11 @@ export default function Layout() {
                   <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {(user?.display_name || user?.full_name)?.[0] || "U"}
+                    {getInitial(user)}
                   </div>
                 )}
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sidebar-foreground text-sm font-medium truncate">{user?.display_name || user?.full_name || "User"}</p>
+                  <p className="text-sidebar-foreground text-sm font-medium truncate">{getDisplayName(user) || "User"}</p>
                   <p className="text-sidebar-foreground/50 text-xs capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-sidebar-foreground/50 flex-shrink-0" />

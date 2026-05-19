@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { COURSES } from "@/lib/courseData";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { TrendingUp, Users, Target, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -187,11 +188,15 @@ export default function AdminReports() {
                 {studentStats.map((s, i) => (
                   <div key={s.email} className="flex items-center gap-3">
                     <span className="text-lg font-bold text-muted-foreground w-6">{i + 1}</span>
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                      {s.full_name?.[0] || "S"}
-                    </div>
+                    {s.avatar_url ? (
+                      <img src={s.avatar_url} alt={getDisplayName(s)} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                        {getInitial(s)}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{s.full_name || s.email}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{getDisplayName(s)}</p>
                       <p className="text-xs text-muted-foreground">{s.examCount} exams</p>
                     </div>
                     <Badge className={`${s.avgScore >= 70 ? "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400"} border-0`}>

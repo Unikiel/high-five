@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 
 const ROLES = [
   { id: "admin", label: "Admin", color: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400" },
@@ -65,7 +66,7 @@ export default function AdminRoles() {
   const [allUsers, setAllUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({ full_name: "", role: "student" });
+  const [editForm, setEditForm] = useState({ display_name: "", role: "student" });
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
 
@@ -128,13 +129,13 @@ export default function AdminRoles() {
 
   const openEdit = (u) => {
     setEditUser(u);
-    setEditForm({ full_name: u.full_name || "", role: u.role || "student" });
+    setEditForm({ display_name: u.display_name || u.full_name || "", role: u.role || "student" });
     setEditMsg("");
   };
 
   const saveEdit = async () => {
     setEditSaving(true);
-    await base44.entities.User.update(editUser.id, { full_name: editForm.full_name, role: editForm.role });
+    await base44.entities.User.update(editUser.id, { display_name: editForm.display_name, role: editForm.role });
     setEditMsg("Saved!");
     await reloadUsers();
     setEditSaving(false);
@@ -211,13 +212,13 @@ export default function AdminRoles() {
                   <div key={u.id} className="flex items-center gap-2 group">
                     <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0 overflow-hidden">
                       {u.avatar_url ? (
-                        <img src={u.avatar_url} alt={u.full_name} className="w-full h-full object-cover" />
+                        <img src={u.avatar_url} alt={getDisplayName(u)} className="w-full h-full object-cover" />
                       ) : (
-                        u.full_name?.[0] || u.email?.[0] || "?"
+                        getInitial(u)
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-foreground truncate">{u.full_name || "—"}</p>
+                      <p className="text-xs font-medium text-foreground truncate">{getDisplayName(u) || "—"}</p>
                       <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                     </div>
                     <button
@@ -357,9 +358,9 @@ export default function AdminRoles() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg overflow-hidden flex-shrink-0">
                 {editUser.avatar_url ? (
-                  <img src={editUser.avatar_url} alt={editUser.full_name} className="w-full h-full object-cover" />
+                  <img src={editUser.avatar_url} alt={getDisplayName(editUser)} className="w-full h-full object-cover" />
                 ) : (
-                  editUser.full_name?.[0] || editUser.email?.[0] || "?"
+                  getInitial(editUser)
                 )}
               </div>
               <div>
@@ -371,9 +372,9 @@ export default function AdminRoles() {
             <div className="space-y-2">
               <Label>Display Name</Label>
               <Input
-                value={editForm.full_name}
-                onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
-                placeholder="Full name"
+                value={editForm.display_name}
+                onChange={e => setEditForm(f => ({ ...f, display_name: e.target.value }))}
+                placeholder="Display name"
               />
             </div>
 

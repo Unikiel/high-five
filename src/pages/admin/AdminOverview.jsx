@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 
 export default function AdminOverview() {
   const { user } = useAuth();
@@ -87,11 +88,15 @@ export default function AdminOverview() {
           <CardContent className="space-y-3">
             {students.slice(0, 5).map(student => (
               <div key={student.email} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                  {student.full_name?.[0] || "S"}
-                </div>
+                {student.avatar_url ? (
+                  <img src={student.avatar_url} alt={getDisplayName(student)} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                    {getInitial(student)}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{student.full_name}</p>
+                  <p className="text-sm font-medium text-foreground truncate">{getDisplayName(student)}</p>
                   <p className="text-xs text-muted-foreground truncate">{student.email}</p>
                 </div>
                 <Badge variant="secondary" className="text-xs flex-shrink-0">

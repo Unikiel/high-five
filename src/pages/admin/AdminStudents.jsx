@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Navigate } from "react-router-dom";
 import { COURSES } from "@/lib/courseData";
+import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { Search, Users, TrendingUp, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,7 @@ export default function AdminStudents() {
   };
 
   const filtered = students.filter(s =>
-    s.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+    getDisplayName(s).toLowerCase().includes(search.toLowerCase()) ||
     s.email?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -87,11 +88,15 @@ export default function AdminStudents() {
                       <tr key={student.email} className="hover:bg-muted/20 transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
-                              {student.full_name?.[0] || "S"}
-                            </div>
+                            {student.avatar_url ? (
+                              <img src={student.avatar_url} alt={getDisplayName(student)} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+                                {getInitial(student)}
+                              </div>
+                            )}
                             <div>
-                              <p className="font-medium text-foreground">{student.full_name || "Unknown"}</p>
+                              <p className="font-medium text-foreground">{getDisplayName(student) || "Unknown"}</p>
                               <p className="text-xs text-muted-foreground">{student.email}</p>
                             </div>
                           </div>

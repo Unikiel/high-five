@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
 import { Calendar, Clock, User, Plus, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,7 +95,7 @@ export default function Tutoring() {
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(session.scheduled_date).toLocaleDateString()}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.scheduled_time} ({session.duration_minutes} min)</span>
               {session.tutor_id && session.tutor_id !== "pending" && (
-                <span className="flex items-center gap-1"><User className="w-3 h-3" />{tutors.find(t => t.email === session.tutor_id)?.full_name || "Assigned Tutor"}</span>
+                <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === session.tutor_id); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
               )}
             </div>
             {session.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{session.notes}</p>}
@@ -158,7 +159,7 @@ export default function Tutoring() {
                   <Select value={form.tutor_id} onValueChange={v => setForm(f => ({ ...f, tutor_id: v }))}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Any available tutor" /></SelectTrigger>
                     <SelectContent>
-                      {tutors.map(t => <SelectItem key={t.email} value={t.email}>{t.full_name}</SelectItem>)}
+                      {tutors.map(t => <SelectItem key={t.email} value={t.email}>{getDisplayName(t)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
 import {
   BookOpen, Target, TrendingUp, Calendar, ChevronRight,
@@ -61,7 +62,7 @@ export default function Dashboard() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">
-            {greeting}, {user?.full_name?.split(" ")[0] || "Student"}! 👋
+            {greeting}, {getDisplayName(user)?.split(" ")[0] || "Student"}! 👋
           </h1>
           <p className="text-muted-foreground mt-1">Stay consistent, stay confident — keep up the great work!</p>
         </div>

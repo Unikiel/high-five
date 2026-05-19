@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { COURSES } from "@/lib/courseData";
+import { getDisplayName } from "@/lib/userDisplay";
 import { Calendar, CheckCircle, XCircle, Clock, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,10 @@ export default function AdminSessions() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const getName = (email) => users.find(u => u.email === email)?.full_name || email;
+  const getName = (email) => {
+    const u = users.find(u => u.email === email);
+    return u ? (getDisplayName(u) || email) : email;
+  };
 
   const STATUS_COLORS = {
     pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400",
