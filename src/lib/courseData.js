@@ -38,7 +38,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_1",
     name: "AP Physics 1",
-    color: "#EF4444",
+    color: "#FF1744",
     icon: "⚡",
     description: "Algebra-based mechanics, waves, circuits, and modern physics.",
     units: [
@@ -54,7 +54,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_2",
     name: "AP Physics 2",
-    color: "#E60000",
+    color: "#D32F2F",
     icon: "🔬",
     description: "Algebra-based fluid mechanics, thermodynamics, E&M, optics, and atomic/nuclear physics.",
     units: [
@@ -70,7 +70,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CM",
     name: "AP Physics C: Mechanics",
-    color: "#C41E3A",
+    color: "#E53935",
     icon: "🚀",
     description: "Calculus-based mechanics: kinematics, dynamics, energy, momentum, rotation, oscillations.",
     units: [
@@ -86,7 +86,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CE",
     name: "AP Physics C: E&M",
-    color: "#B91C1C",
+    color: "#F44336",
     icon: "⚛️",
     description: "Calculus-based electricity and magnetism: fields, circuits, induction.",
     units: [
