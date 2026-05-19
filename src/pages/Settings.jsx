@@ -131,7 +131,7 @@ export default function Settings() {
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
             <div>
-              <p className="font-semibold text-foreground">{user?.full_name}</p>
+              <p className="font-semibold text-foreground">{displayName || user?.full_name}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
               <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</Badge>
               <p className="text-xs text-muted-foreground mt-1">Click avatar to change photo</p>
