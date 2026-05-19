@@ -58,6 +58,27 @@ export default function Landing() {
           </Link>
         </div>
         <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>
+
+        {/* Social proof avatars */}
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <div className="flex -space-x-3">
+            {[
+              "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face",
+              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face",
+            ].map((src, i) => (
+              <img key={i} src={src} alt="Student" className="w-9 h-9 rounded-full border-2 border-background object-cover" />
+            ))}
+          </div>
+          <div className="text-left">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
+            </div>
+            <p className="text-xs text-muted-foreground"><span className="font-semibold text-foreground">1,000+ students</span> scored a 5</p>
+          </div>
+        </div>
       </section>
 
       {/* Courses */}
