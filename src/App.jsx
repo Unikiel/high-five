@@ -27,6 +27,7 @@ import AdminReports from "@/pages/admin/AdminReports";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminBilling from "@/pages/admin/AdminBilling";
 import AdminRoles from "@/pages/admin/AdminRoles";
+import AdminCourses from "@/pages/admin/AdminCourses";
 
 // Auth Pages
 import Login from "@/pages/Login";
@@ -82,7 +83,7 @@ const AuthenticatedApp = () => {
           {/* Admin routes */}
           <Route path="/admin" element={<AdminOverview />} />
           <Route path="/admin/students" element={<AdminStudents />} />
-          <Route path="/admin/courses" element={<Courses />} />
+          <Route path="/admin/courses" element={<AdminCourses />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/sessions" element={<AdminSessions />} />
           <Route path="/admin/billing" element={<AdminBilling />} />

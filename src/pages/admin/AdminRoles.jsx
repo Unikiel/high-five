@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { Check, X, Pencil } from "lucide-react";
+import { Check, X, Pencil, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,10 +57,27 @@ export default function AdminRoles() {
   const [saved, setSaved] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const [editUser, setEditUser] = useState(null); // user being edited
+  const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({ full_name: "", role: "user" });
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
+
+  // Invite user state
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("user");
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState({ text: "", ok: false });
+
+  const sendInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteSending(true);
+    await base44.users.inviteUser(inviteEmail.trim(), inviteRole);
+    setInviteMsg({ text: `Invite sent to ${inviteEmail}!`, ok: true });
+    setInviteEmail("");
+    setInviteSending(false);
+    setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 2500);
+  };
 
   const reloadUsers = () => base44.entities.User.list().then(setAllUsers).catch(() => {});
 
@@ -123,6 +140,9 @@ export default function AdminRoles() {
           >
             Reset to defaults
           </button>
+          <Button onClick={() => { setShowInvite(true); setInviteMsg({ text: "", ok: false }); }} className="gap-2">
+            <UserPlus className="w-4 h-4" /> Invite User
+          </Button>
         </div>
       </div>
 
@@ -230,6 +250,57 @@ export default function AdminRoles() {
       <p className="text-xs text-muted-foreground">
         Note: Changes are saved to this browser's local storage and serve as a reference matrix. Actual route enforcement is handled in code per page.
       </p>
+
+      {/* Invite User Modal */}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowInvite(false)}>
+          <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
+            <div>
+              <h2 className="font-display text-lg font-bold text-foreground">Invite User</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input
+                type="email"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                placeholder="name@example.com"
+                onKeyDown={e => e.key === "Enter" && sendInvite()}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {ROLES.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => setInviteRole(r.id)}
+                    className={`py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                      inviteRole === r.id ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {inviteMsg.text && (
+              <p className={`text-xs font-medium ${inviteMsg.ok ? "text-green-600" : "text-red-500"}`}>{inviteMsg.text}</p>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <Button onClick={sendInvite} disabled={inviteSending || !inviteEmail.trim()} className="flex-1">
+                {inviteSending ? "Sending…" : "Send Invite"}
+              </Button>
+              <Button variant="ghost" onClick={() => setShowInvite(false)} className="flex-1">Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit User Modal */}
       {editUser && (
