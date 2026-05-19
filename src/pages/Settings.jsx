@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import { User, Sun, Moon, Monitor, Shield, KeyRound, Pencil, Check } from "lucide-react";
+import { User, Sun, Moon, Monitor, Shield, KeyRound, Pencil, Check, Camera, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,11 @@ export default function Settings() {
   const { user } = useAuth();
   const [theme, setTheme] = useState(localStorage.getItem("hf-theme") || "system");
 
+  // Avatar state
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   // Profile edit state
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState(user?.full_name || "");
@@ -23,6 +28,16 @@ export default function Settings() {
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState({ text: "", ok: false });
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setAvatarUrl(file_url);
+    await base44.auth.updateMe({ avatar_url: file_url });
+    setAvatarUploading(false);
+  };
 
   const saveName = async () => {
     if (!displayName.trim()) return;
@@ -79,13 +94,28 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-              {displayName?.[0] || user?.full_name?.[0] || "U"}
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
+                  {displayName?.[0] || user?.full_name?.[0] || "U"}
+                </div>
+              )}
+              <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {avatarUploading ? (
+                  <Loader2 className="w-5 h-5 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
             <div>
               <p className="font-semibold text-foreground">{user?.full_name}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
               <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role || "student"}</Badge>
+              <p className="text-xs text-muted-foreground mt-1">Click avatar to change photo</p>
             </div>
           </div>
 

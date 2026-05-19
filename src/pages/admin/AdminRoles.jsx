@@ -165,8 +165,12 @@ export default function AdminRoles() {
                 )}
                 {members.slice(0, 5).map(u => (
                   <div key={u.id} className="flex items-center gap-2 group">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
-                      {u.full_name?.[0] || u.email?.[0] || "?"}
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0 overflow-hidden">
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt={u.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        u.full_name?.[0] || u.email?.[0] || "?"
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground truncate">{u.full_name || "—"}</p>
@@ -306,9 +310,18 @@ export default function AdminRoles() {
       {editUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setEditUser(null)}>
           <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
-            <div>
-              <h2 className="font-display text-lg font-bold text-foreground">Edit User</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">{editUser.email}</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg overflow-hidden flex-shrink-0">
+                {editUser.avatar_url ? (
+                  <img src={editUser.avatar_url} alt={editUser.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  editUser.full_name?.[0] || editUser.email?.[0] || "?"
+                )}
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold text-foreground">Edit User</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">{editUser.email}</p>
+              </div>
             </div>
 
             <div className="space-y-2">
