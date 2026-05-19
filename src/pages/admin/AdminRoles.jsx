@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { Check, X } from "lucide-react";
+import { Check, X, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
 
 const ROLES = [
@@ -54,10 +57,33 @@ export default function AdminRoles() {
   const [saved, setSaved] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [editUser, setEditUser] = useState(null); // user being edited
+  const [editForm, setEditForm] = useState({ full_name: "", role: "user" });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editMsg, setEditMsg] = useState("");
+
+  const reloadUsers = () => base44.entities.User.list().then(setAllUsers).catch(() => {});
 
   useEffect(() => {
-    base44.entities.User.list().then(u => { setAllUsers(u); setLoadingUsers(false); }).catch(() => setLoadingUsers(false));
+    base44.entities.User.list()
+      .then(u => { setAllUsers(u); setLoadingUsers(false); })
+      .catch(() => setLoadingUsers(false));
   }, []);
+
+  const openEdit = (u) => {
+    setEditUser(u);
+    setEditForm({ full_name: u.full_name || "", role: u.role || "user" });
+    setEditMsg("");
+  };
+
+  const saveEdit = async () => {
+    setEditSaving(true);
+    await base44.entities.User.update(editUser.id, { full_name: editForm.full_name, role: editForm.role });
+    setEditMsg("Saved!");
+    await reloadUsers();
+    setEditSaving(false);
+    setTimeout(() => { setEditUser(null); setEditMsg(""); }, 1200);
+  };
 
   if (user && user.role !== "admin") {
     return <Navigate to="/dashboard" replace />;
@@ -118,14 +144,21 @@ export default function AdminRoles() {
                   <p className="text-xs text-muted-foreground italic">No users with this role</p>
                 )}
                 {members.slice(0, 5).map(u => (
-                  <div key={u.id} className="flex items-center gap-2">
+                  <div key={u.id} className="flex items-center gap-2 group">
                     <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
                       {u.full_name?.[0] || u.email?.[0] || "?"}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground truncate">{u.full_name || "—"}</p>
                       <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                     </div>
+                    <button
+                      onClick={() => openEdit(u)}
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity"
+                      title="Edit user"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
                   </div>
                 ))}
                 {members.length > 5 && (
@@ -197,6 +230,53 @@ export default function AdminRoles() {
       <p className="text-xs text-muted-foreground">
         Note: Changes are saved to this browser's local storage and serve as a reference matrix. Actual route enforcement is handled in code per page.
       </p>
+
+      {/* Edit User Modal */}
+      {editUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setEditUser(null)}>
+          <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
+            <div>
+              <h2 className="font-display text-lg font-bold text-foreground">Edit User</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{editUser.email}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Display Name</Label>
+              <Input
+                value={editForm.full_name}
+                onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
+                placeholder="Full name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {ROLES.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => setEditForm(f => ({ ...f, role: r.id }))}
+                    className={`py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                      editForm.role === r.id ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-border/60"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {editMsg && <p className="text-xs text-green-600 font-medium">{editMsg}</p>}
+
+            <div className="flex gap-2 pt-1">
+              <Button onClick={saveEdit} disabled={editSaving} className="flex-1">
+                {editSaving ? "Saving…" : "Save Changes"}
+              </Button>
+              <Button variant="ghost" onClick={() => setEditUser(null)} className="flex-1">Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

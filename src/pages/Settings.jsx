@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import { User, Sun, Moon, Monitor, Shield, Bell } from "lucide-react";
+import { User, Sun, Moon, Monitor, Shield, KeyRound, Pencil, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,45 @@ import { Badge } from "@/components/ui/badge";
 
 export default function Settings() {
   const { user } = useAuth();
-  const [saving, setSaving] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("hf-theme") || "system");
+
+  // Profile edit state
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.full_name || "");
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState("");
+
+  // Password change state
+  const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState({ text: "", ok: false });
+
+  const saveName = async () => {
+    if (!displayName.trim()) return;
+    setNameSaving(true);
+    await base44.auth.updateMe({ full_name: displayName.trim() });
+    setNameMsg("Name updated!");
+    setEditingName(false);
+    setNameSaving(false);
+    setTimeout(() => setNameMsg(""), 3000);
+  };
+
+  const changePassword = async () => {
+    if (pwForm.newPw !== pwForm.confirm) {
+      setPwMsg({ text: "New passwords don't match.", ok: false });
+      return;
+    }
+    if (pwForm.newPw.length < 6) {
+      setPwMsg({ text: "Password must be at least 6 characters.", ok: false });
+      return;
+    }
+    setPwSaving(true);
+    await base44.auth.updateMe({ password: pwForm.newPw });
+    setPwMsg({ text: "Password updated successfully!", ok: true });
+    setPwForm({ current: "", newPw: "", confirm: "" });
+    setPwSaving(false);
+    setTimeout(() => setPwMsg({ text: "", ok: false }), 4000);
+  };
 
   const applyTheme = (t) => {
     setTheme(t);
@@ -40,10 +77,10 @@ export default function Settings() {
             <User className="w-4 h-4 text-primary" />Profile
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-              {user?.full_name?.[0] || "U"}
+              {displayName?.[0] || user?.full_name?.[0] || "U"}
             </div>
             <div>
               <p className="font-semibold text-foreground">{user?.full_name}</p>
@@ -51,6 +88,70 @@ export default function Settings() {
               <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role || "student"}</Badge>
             </div>
           </div>
+
+          {/* Display name edit */}
+          <div className="space-y-2">
+            <Label>Display Name</Label>
+            {editingName ? (
+              <div className="flex gap-2">
+                <Input
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className="flex-1"
+                />
+                <Button size="sm" onClick={saveName} disabled={nameSaving}>
+                  {nameSaving ? "Saving…" : <><Check className="w-4 h-4 mr-1" />Save</>}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setDisplayName(user?.full_name || ""); }}>
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-foreground">{user?.full_name || "—"}</p>
+                <button onClick={() => setEditingName(true)} className="text-muted-foreground hover:text-primary">
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            {nameMsg && <p className="text-xs text-green-600">{nameMsg}</p>}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Change Password */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-primary" />Change Password
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>New Password</Label>
+            <Input
+              type="password"
+              value={pwForm.newPw}
+              onChange={e => setPwForm(p => ({ ...p, newPw: e.target.value }))}
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Confirm New Password</Label>
+            <Input
+              type="password"
+              value={pwForm.confirm}
+              onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+              placeholder="••••••••"
+            />
+          </div>
+          {pwMsg.text && (
+            <p className={`text-xs ${pwMsg.ok ? "text-green-600" : "text-red-500"}`}>{pwMsg.text}</p>
+          )}
+          <Button onClick={changePassword} disabled={pwSaving || !pwForm.newPw || !pwForm.confirm} size="sm">
+            {pwSaving ? "Updating…" : "Update Password"}
+          </Button>
         </CardContent>
       </Card>
 
