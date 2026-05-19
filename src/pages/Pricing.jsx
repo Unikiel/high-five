@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/64f6122bc_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/1cab3125e_generated_image.png";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
@@ -47,7 +47,7 @@ export default function Pricing() {
           <Badge className="mb-4 bg-primary/10 text-primary border-0">Pricing</Badge>
           <h1 className="font-display text-5xl font-bold text-foreground mb-4">Invest in your 5</h1>
           <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-            Full access to all 10 AP courses, unlimited practice exams, and adaptive AI coaching.
+            Full access to all 10 courses, unlimited practice exams, and adaptive AI coaching.
           </p>
         </div>
 

@@ -17,11 +17,11 @@ export default function Landing() {
     });
   }, []);
   const features = [
-    { icon: BookOpen, title: "10 AP Courses", desc: "Full College Board-aligned content for every AP subject you need.", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
+    { icon: BookOpen, title: "10 Courses", desc: "Full College Board-aligned content for every subject you need.", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
     { icon: Brain, title: "Adaptive Practice", desc: "AI adjusts difficulty based on your mastery and exam scores.", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
-    { icon: Target, title: "Exam Simulator", desc: "Practice exams that mirror real AP format with LaTeX-rendered math.", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
+    { icon: Target, title: "Exam Simulator", desc: "Practice exams that mirror real formats with LaTeX-rendered math.", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
     { icon: TrendingUp, title: "Progress Tracking", desc: "Detailed analytics to identify strengths and target weak areas.", color: "text-green-500", bg: "bg-green-50 dark:bg-green-950/30" },
-    { icon: Calendar, title: "1-on-1 Tutoring", desc: "Book personalized sessions with AP-certified tutors.", color: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-950/30" },
+    { icon: Calendar, title: "1-on-1 Tutoring", desc: "Book personalized sessions with certified tutors.", color: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-950/30" },
     { icon: Shield, title: "Content Protection", desc: "Secure platform with anti-copy measures to protect your investment.", color: "text-slate-500", bg: "bg-slate-50 dark:bg-slate-950/30" },
   ];
 
@@ -33,7 +33,7 @@ export default function Landing() {
           <img src={LOGO_URL} alt="High Five" className="w-9 h-9 rounded-xl object-cover" />
           <div>
             <span className="font-display font-bold text-foreground text-lg">High Five</span>
-            <p className="text-xs text-muted-foreground leading-none">AP Prep Platform</p>
+            <p className="text-xs text-muted-foreground leading-none">Exam Prep Platform</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -60,13 +60,13 @@ export default function Landing() {
       {/* Hero */}
       <section className="px-6 py-20 max-w-6xl mx-auto text-center">
         <Badge className="mb-6 bg-primary/10 text-primary border-0 text-sm px-4 py-1.5">
-          <Star className="w-3.5 h-3.5 mr-1.5" />Trusted by 1,000+ AP Students
+          <Star className="w-3.5 h-3.5 mr-1.5" />Trusted by 1,000+ Students
         </Badge>
         <h1 className="font-display text-5xl md:text-7xl font-black text-foreground mb-6 leading-tight">
-          Score a <span className="gradient-text">5</span> on Every<br />AP Exam
+          Score a <span className="gradient-text">5</span> on Every<br />Exam
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
-          High Five is the most comprehensive AP prep platform — aligned with every College Board exam description, 
+          High Five is the most comprehensive exam prep platform — aligned with every College Board and international exam descriptions, 
           with adaptive practice exams and expert tutoring.
         </p>
         <p className="text-base text-muted-foreground italic mb-10">Stay consistent, stay confident.</p>
@@ -107,8 +107,8 @@ export default function Landing() {
       {/* Courses */}
       <section className="px-6 py-16 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-display text-3xl font-bold text-foreground text-center mb-3">10 AP Courses Covered</h2>
-          <p className="text-muted-foreground text-center mb-10">Every course strictly aligned with College Board Exam Descriptions</p>
+          <h2 className="font-display text-3xl font-bold text-foreground text-center mb-3">10 Courses Covered</h2>
+          <p className="text-muted-foreground text-center mb-10">Comprehensive content for all major exam curricula</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {COURSES.map(course => (
               <div key={course.code} className="bg-background rounded-2xl p-4 border border-border/50 hover:shadow-md transition-all text-center group">
@@ -142,8 +142,8 @@ export default function Landing() {
 
       {/* CTA */}
       <section className="px-6 py-20 text-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <h2 className="font-display text-4xl font-bold text-foreground mb-4">Ready to ace your AP exams?</h2>
-        <p className="text-muted-foreground text-lg mb-8">Join thousands of students who earned their 5 with High Five.</p>
+        <h2 className="font-display text-4xl font-bold text-foreground mb-4">Ready to ace your exams?</h2>
+        <p className="text-muted-foreground text-lg mb-8">Join thousands of students who mastered their exams with High Five.</p>
         <Link to="/register">
           <Button size="lg" className="gap-2 text-base px-10 h-12">
             <Zap className="w-4 h-4" />Start Your Free Trial
@@ -157,7 +157,7 @@ export default function Landing() {
           <img src={LOGO_URL} alt="High Five" className="w-6 h-6 rounded-lg" />
           <span className="font-display font-bold text-foreground">High Five</span>
         </div>
-        <p className="text-sm text-muted-foreground">© 2026 High Five AP Prep. All rights reserved.</p>
+        <p className="text-sm text-muted-foreground">© 2026 High Five. All rights reserved.</p>
       </footer>
     </div>
   );

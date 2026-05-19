@@ -109,7 +109,7 @@ export default function Tutoring() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">1-on-1 Tutoring</h1>
-          <p className="text-muted-foreground mt-1">Book personalized sessions with AP experts</p>
+          <p className="text-muted-foreground mt-1">Book personalized sessions with expert tutors</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -185,7 +185,7 @@ export default function Tutoring() {
             <CardContent className="p-10 text-center">
               <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <h3 className="font-semibold text-foreground mb-1">No upcoming sessions</h3>
-              <p className="text-sm text-muted-foreground mb-4">Book a 1-on-1 session with an AP expert</p>
+              <p className="text-sm text-muted-foreground mb-4">Book a 1-on-1 session with an expert tutor</p>
               <Button onClick={() => setOpen(true)}>Book Now</Button>
             </CardContent>
           </Card>

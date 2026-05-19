@@ -107,7 +107,7 @@ export default function Dashboard() {
               <CardContent className="p-10 text-center">
                 <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-1">No courses yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">Browse and enroll in AP courses to get started</p>
+                <p className="text-sm text-muted-foreground mb-4">Browse and enroll in courses to get started</p>
                 <Link to="/courses">
                   <Button>Browse Courses</Button>
                 </Link>

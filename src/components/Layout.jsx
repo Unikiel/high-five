@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/64f6122bc_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/1cab3125e_generated_image.png";
 
 const studentNav = [
   { path: "/dashboard", icon: Home, label: "Dashboard" },
@@ -79,7 +79,7 @@ export default function Layout() {
           <img src={LOGO_URL} alt="High Five" className="w-9 h-9 rounded-lg object-cover" />
           <div>
             <h1 className="font-display font-bold text-white text-lg leading-tight">High Five</h1>
-            <p className="text-sidebar-foreground/60 text-xs">AP Prep Platform</p>
+            <p className="text-sidebar-foreground/60 text-xs">Exam Prep Platform</p>
           </div>
           <button className="lg:hidden ml-auto text-sidebar-foreground/60 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X className="w-5 h-5" />
