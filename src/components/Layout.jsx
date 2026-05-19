@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Home, BookOpen, Target, TrendingUp, Calendar, 
   Settings, LogOut, Menu, X, Sun, Moon, Monitor,
-  GraduationCap, Users, CreditCard, ChevronDown
+  GraduationCap, Users, CreditCard, ChevronDown, Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ const staffNav = [
   { path: "/admin/reports", icon: TrendingUp, label: "Reports" },
   { path: "/admin/sessions", icon: Calendar, label: "Sessions" },
   { path: "/admin/billing", icon: CreditCard, label: "Billing" },
+  { path: "/admin/roles", icon: Shield, label: "Roles & Permissions" },
 ];
 
 export default function Layout() {

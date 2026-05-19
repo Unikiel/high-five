@@ -26,6 +26,7 @@ import AdminStudents from "@/pages/admin/AdminStudents";
 import AdminReports from "@/pages/admin/AdminReports";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminBilling from "@/pages/admin/AdminBilling";
+import AdminRoles from "@/pages/admin/AdminRoles";
 
 // Auth Pages
 import Login from "@/pages/Login";
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/sessions" element={<AdminSessions />} />
           <Route path="/admin/billing" element={<AdminBilling />} />
+          <Route path="/admin/roles" element={<AdminRoles />} />
         </Route>
       </Route>
 
