@@ -82,12 +82,6 @@ export default function AdminRoles() {
     setInviteSending(true);
     try {
       const email = inviteEmail.trim();
-      
-      // Use custom invitation that includes correct role in email
-      await base44.functions.invoke('sendCustomInvitation', {
-        email,
-        role: inviteRole
-      });
 
       // inviteUser only accepts "user" or "admin" as base role
       const baseRole = inviteRole === "admin" ? "admin" : "user";
