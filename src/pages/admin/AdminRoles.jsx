@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { Shield, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Check, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { base44 } from "@/api/base44Client";
 
 const ROLES = [
   { id: "admin", label: "Admin", color: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400" },
@@ -51,6 +52,12 @@ export default function AdminRoles() {
   const { user } = useAuth();
   const [matrix, setMatrix] = useState(loadMatrix);
   const [saved, setSaved] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+
+  useEffect(() => {
+    base44.entities.User.list().then(u => { setAllUsers(u); setLoadingUsers(false); }).catch(() => setLoadingUsers(false));
+  }, []);
 
   if (user && user.role !== "admin") {
     return <Navigate to="/dashboard" replace />;
@@ -93,12 +100,45 @@ export default function AdminRoles() {
         </div>
       </div>
 
-      {/* Role legend */}
-      <div className="flex flex-wrap gap-2">
-        {ROLES.map(r => (
-          <Badge key={r.id} className={`${r.color} border-0 text-xs`}>{r.label}</Badge>
-        ))}
+      {/* Users by Role */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {ROLES.map(role => {
+          const members = allUsers.filter(u => (u.role || "user") === role.id);
+          return (
+            <Card key={role.id} className="border-border/50">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold">{role.label}s</CardTitle>
+                  <Badge className={`${role.color} border-0 text-xs`}>{members.length}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="px-5 pb-4 space-y-2">
+                {loadingUsers && <p className="text-xs text-muted-foreground">Loading…</p>}
+                {!loadingUsers && members.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">No users with this role</p>
+                )}
+                {members.slice(0, 5).map(u => (
+                  <div key={u.id} className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
+                      {u.full_name?.[0] || u.email?.[0] || "?"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{u.full_name || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                    </div>
+                  </div>
+                ))}
+                {members.length > 5 && (
+                  <p className="text-xs text-muted-foreground">+{members.length - 5} more</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Page Access Matrix */}
+      <h2 className="font-display text-lg font-semibold text-foreground">Page Access Matrix</h2>
 
       <Card className="border-border/50">
         <CardContent className="p-0 overflow-x-auto">
