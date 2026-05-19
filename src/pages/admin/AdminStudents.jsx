@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
+import { Navigate } from "react-router-dom";
 import { COURSES } from "@/lib/courseData";
 import { Search, Users, TrendingUp, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 export default function AdminStudents() {
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [exams, setExams] = useState([]);
@@ -43,6 +46,10 @@ export default function AdminStudents() {
       : null;
     return { courses: enr.length, exams: studentExams.length, avgScore };
   };
+
+  if (user && user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
