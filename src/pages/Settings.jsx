@@ -38,7 +38,7 @@ export default function Settings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setAvatarUrl(file_url);
-      await base44.auth.updateMe({ avatar_url: file_url });
+      await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
       if (refreshUser) await refreshUser();
     } catch (err) {
       console.error("Avatar upload failed:", err);
@@ -51,7 +51,7 @@ export default function Settings() {
     if (!displayName.trim()) return;
     setNameSaving(true);
     try {
-      await base44.auth.updateMe({ full_name: displayName.trim() });
+      await base44.functions.invoke('updateUserProfile', { full_name: displayName.trim() });
       if (refreshUser) await refreshUser();
       setNameMsg("Name updated!");
       setEditingName(false);
@@ -75,7 +75,7 @@ export default function Settings() {
     }
     setPwSaving(true);
     try {
-      await base44.auth.updateMe({ password: pwForm.newPw });
+      await base44.auth.resetPassword({ newPassword: pwForm.newPw });
       setPwMsg({ text: "Password updated successfully!", ok: true });
       setPwForm({ current: "", newPw: "", confirm: "" });
     } catch (err) {
