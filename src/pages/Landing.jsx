@@ -36,15 +36,15 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="border-b border-border/50 px-6 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur z-50">
-        <div className="flex items-center gap-2.5">
-          <img src={LOGO_URL} alt="High Five" className="w-9 h-9 rounded-xl object-cover" />
-          <div>
-            <span className="font-display font-bold text-foreground text-lg">High Five</span>
-            <p className="text-xs text-muted-foreground leading-none">Exam Prep Platform</p>
+      <nav className="border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur z-50 gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <img src={LOGO_URL} alt="High Five" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="font-display font-bold text-foreground text-base sm:text-lg leading-tight">High Five</span>
+            <p className="hidden sm:block text-xs text-muted-foreground leading-none">Exam Prep Platform</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
           <Link to="/pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
           {currentUser ? (
             <>
@@ -71,32 +71,32 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section className="px-6 py-20 max-w-6xl mx-auto text-center">
-        <Badge className="mb-6 bg-primary/10 text-primary border-0 text-sm px-4 py-1.5">
+      <section className="px-4 sm:px-6 py-14 sm:py-16 md:py-20 max-w-6xl mx-auto text-center">
+        <Badge className="mb-5 sm:mb-6 bg-primary/10 text-primary border-0 text-xs sm:text-sm px-3 sm:px-4 py-1.5">
           <Star className="w-3.5 h-3.5 mr-1.5" />Trusted by 1,000+ Students
         </Badge>
-        <h1 className="font-display text-5xl md:text-7xl font-black text-foreground mb-6 leading-tight">
-          Score a <span className="gradient-text">5</span> on Every<br />Exam
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-foreground mb-5 sm:mb-6 leading-[1.05] tracking-tight">
+          Score a <span className="gradient-text">5</span> on Every<br className="hidden sm:block" /> Exam
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
           High Five is the most comprehensive exam prep platform — aligned with every College Board and international exam descriptions, 
           with adaptive practice exams and expert tutoring.
         </p>
-        <p className="text-base text-muted-foreground italic mb-10">Stay consistent, stay confident.</p>
-        <div className="flex items-center justify-center gap-4">
-          <Link to="/register">
-            <Button size="lg" className="gap-2 text-base px-8 h-12">
+        <p className="text-sm sm:text-base text-muted-foreground italic mb-8 sm:mb-10">Stay consistent, stay confident.</p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto">
+          <Link to="/register" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto gap-2 text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <Link to="/pricing">
-            <Button size="lg" variant="outline" className="text-base px-8 h-12">View Pricing</Button>
+          <Link to="/pricing" className="w-full sm:w-auto">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">View Pricing</Button>
           </Link>
         </div>
         <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>
 
         {/* Social proof avatars */}
-        <div className="flex items-center justify-center gap-3 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
           <div className="flex -space-x-3">
             {[
               { initial: "A", color: "bg-blue-500" },
@@ -124,11 +124,11 @@ export default function Landing() {
       </section>
 
       {/* Courses */}
-      <section className="px-6 py-16 bg-muted/30">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-display text-3xl font-bold text-foreground text-center mb-3">10 Courses Covered</h2>
-          <p className="text-muted-foreground text-center mb-10">Comprehensive content for all major exam curricula</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground text-center mb-3">10 Courses Covered</h2>
+          <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-10">Comprehensive content for all major exam curricula</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {COURSES.map(course => (
               <div key={course.code} className="bg-background rounded-2xl p-4 border border-border/50 hover:shadow-md transition-all text-center group">
                 <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center text-2xl text-white shadow-sm group-hover:scale-110 transition-transform"
@@ -143,10 +143,10 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-16 max-w-6xl mx-auto">
-        <h2 className="font-display text-3xl font-bold text-foreground text-center mb-3">Everything you need to score a 5</h2>
-        <p className="text-muted-foreground text-center mb-12">A complete AP prep ecosystem built by educators</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="px-4 sm:px-6 py-12 sm:py-16 max-w-6xl mx-auto">
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground text-center mb-3">Everything you need to score a 5</h2>
+        <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12">A complete AP prep ecosystem built by educators</p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map(({ icon: Icon, title, desc, color, bg }) => (
             <div key={title} className="p-6 rounded-2xl border border-border/50 bg-background hover:shadow-md transition-all card-hover">
               <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center mb-4`}>
@@ -160,9 +160,9 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 py-20 text-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <h2 className="font-display text-4xl font-bold text-foreground mb-4">Ready to ace your exams?</h2>
-        <p className="text-muted-foreground text-lg mb-8">Join thousands of students who mastered their exams with High Five.</p>
+      <section className="px-4 sm:px-6 py-14 sm:py-20 text-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">Ready to ace your exams?</h2>
+        <p className="text-sm sm:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">Join thousands of students who mastered their exams with High Five.</p>
         <Link to="/register">
           <Button size="lg" className="gap-2 text-base px-10 h-12">
             <Zap className="w-4 h-4" />Start Your Free Trial
