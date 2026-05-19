@@ -60,7 +60,9 @@ export default function Settings() {
     if (!displayName.trim()) return;
     setNameSaving(true);
     try {
-      await base44.functions.invoke('updateUserProfile', { full_name: displayName.trim() });
+      const result = await base44.functions.invoke('updateUserProfile', { full_name: displayName.trim() });
+      // Update context so UI reflects the change
+      if (refreshUser) await refreshUser();
       setNameMsg("Name updated!");
       setEditingName(false);
     } catch (err) {
