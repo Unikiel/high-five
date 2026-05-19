@@ -17,31 +17,28 @@ import {
 
 const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
 
-const studentNav = [
-  { path: "/dashboard", icon: Home, label: "Dashboard" },
-  { path: "/courses", icon: BookOpen, label: "My Courses" },
-  { path: "/practice", icon: Target, label: "Practice Exams" },
-  { path: "/progress", icon: TrendingUp, label: "My Progress" },
-  { path: "/tutoring", icon: Calendar, label: "Tutoring" },
+const ALL_NAV_ITEMS = [
+  { path: "/dashboard", icon: Home, label: "Dashboard", page: "dashboard" },
+  { path: "/courses", icon: BookOpen, label: "My Courses", page: "courses" },
+  { path: "/practice", icon: Target, label: "Practice Exams", page: "practice" },
+  { path: "/progress", icon: TrendingUp, label: "My Progress", page: "progress" },
+  { path: "/tutoring", icon: Calendar, label: "Tutoring", page: "tutoring" },
+  { path: "/settings", icon: Settings, label: "Settings", page: "settings" },
+  { path: "/admin", icon: Home, label: "Overview", page: "admin" },
+  { path: "/admin/courses", icon: BookOpen, label: "Courses", page: "admin_courses" },
+  { path: "/admin/students", icon: Users, label: "Students", page: "admin_students" },
+  { path: "/admin/reports", icon: TrendingUp, label: "Reports", page: "admin_reports" },
+  { path: "/admin/sessions", icon: Calendar, label: "Sessions", page: "admin_sessions" },
+  { path: "/admin/billing", icon: CreditCard, label: "Billing", page: "admin_billing" },
+  { path: "/admin/roles", icon: Shield, label: "Roles & Permissions", page: "admin_roles" },
 ];
 
-const tutorNav = [
-  { path: "/admin", icon: Home, label: "Overview" },
-  { path: "/admin/courses", icon: BookOpen, label: "Courses" },
-  { path: "/admin/students", icon: Users, label: "Students" },
-  { path: "/admin/reports", icon: TrendingUp, label: "Reports" },
-  { path: "/admin/sessions", icon: Calendar, label: "Sessions" },
-];
-
-const adminNav = [
-  { path: "/admin", icon: Home, label: "Overview" },
-  { path: "/admin/courses", icon: BookOpen, label: "Courses" },
-  { path: "/admin/students", icon: Users, label: "Students" },
-  { path: "/admin/reports", icon: TrendingUp, label: "Reports" },
-  { path: "/admin/sessions", icon: Calendar, label: "Sessions" },
-  { path: "/admin/billing", icon: CreditCard, label: "Billing" },
-  { path: "/admin/roles", icon: Shield, label: "Roles & Permissions" },
-];
+const DEFAULT_MATRIX = {
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+};
 
 export default function Layout() {
   const { user } = useAuth();
@@ -49,10 +46,22 @@ export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const isAdmin = user?.role === "admin";
-  const isTutor = user?.role === "tutor" || user?.role === "assistant";
-  // "student" is the default role (replaces the platform's internal "user" label)
-  const navItems = isAdmin ? adminNav : isTutor ? tutorNav : studentNav;
+  const getNavItems = () => {
+    if (!user) return [];
+    const role = user.role === "user" ? "student" : (user.role || "student");
+    const matrix = (() => {
+      try {
+        const saved = localStorage.getItem("hf-role-matrix");
+        return saved ? JSON.parse(saved) : DEFAULT_MATRIX;
+      } catch {
+        return DEFAULT_MATRIX;
+      }
+    })();
+    const permissions = matrix[role] || {};
+    return ALL_NAV_ITEMS.filter(item => permissions[item.page] !== false);
+  };
+
+  const navItems = getNavItems();
 
   const handleLogout = () => base44.auth.logout("/");
 
