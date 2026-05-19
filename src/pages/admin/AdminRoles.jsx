@@ -79,25 +79,36 @@ export default function AdminRoles() {
   const sendInvite = async () => {
     if (!inviteEmail.trim()) return;
     setInviteSending(true);
-    const email = inviteEmail.trim();
-    // inviteUser only accepts "user" or "admin" as base role
-    const baseRole = inviteRole === "admin" ? "admin" : "user";
-    await base44.users.inviteUser(email, baseRole);
+    try {
+      const email = inviteEmail.trim();
+      // inviteUser only accepts "user" or "admin" as base role
+      const baseRole = inviteRole === "admin" ? "admin" : "user";
+      await base44.users.inviteUser(email, baseRole);
 
-    // After invite, reload users and if they already exist, set their custom role immediately
-    const updatedUsers = await base44.entities.User.list();
-    setAllUsers(updatedUsers);
-    const existingUser = updatedUsers.find(u => u.email === email);
-    if (existingUser && existingUser.role !== inviteRole) {
-      await base44.entities.User.update(existingUser.id, { role: inviteRole });
+      // Wait a moment for the user to be created in the system
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Now reload and update their role
+      const updatedUsers = await base44.entities.User.list();
+      const existingUser = updatedUsers.find(u => u.email === email);
+      if (existingUser) {
+        // Always update role to ensure it matches the selection
+        await base44.entities.User.update(existingUser.id, { role: inviteRole });
+      }
+
+      // Reload final list
       const refreshed = await base44.entities.User.list();
       setAllUsers(refreshed);
-    }
 
-    setInviteMsg({ text: `Invite sent to ${email}!`, ok: true });
-    setInviteEmail("");
-    setInviteSending(false);
-    setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 2500);
+      setInviteMsg({ text: `Invite sent to ${email} as ${inviteRole}!`, ok: true });
+      setInviteEmail("");
+      setInviteRole("student");
+      setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 2500);
+    } catch (err) {
+      setInviteMsg({ text: `Error: ${err.message}`, ok: false });
+    } finally {
+      setInviteSending(false);
+    }
   };
 
   const reloadUsers = () => base44.entities.User.list().then(setAllUsers).catch(() => {});
