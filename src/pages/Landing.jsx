@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CheckCircle, Target, TrendingUp, Calendar, Brain, Shield, BookOpen, Zap, Star, ArrowRight, LayoutDashboard } from "lucide-react";
+import { CheckCircle, Target, TrendingUp, Calendar, Brain, Shield, BookOpen, Zap, Star, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
@@ -10,12 +10,19 @@ const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff1
 
 export default function Landing() {
   const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(authed => {
       if (authed) base44.auth.me().then(setCurrentUser).catch(() => {});
     });
   }, []);
+
+  const handleLogout = async () => {
+    await base44.auth.logout();
+    setCurrentUser(null);
+    navigate("/");
+  };
   const features = [
     { icon: BookOpen, title: "10 Courses", desc: "Full College Board-aligned content for every subject you need.", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
     { icon: Brain, title: "Adaptive Practice", desc: "AI adjusts difficulty based on your mastery and exam scores.", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
@@ -47,6 +54,7 @@ export default function Landing() {
                 <span className="hidden sm:block font-medium text-foreground">{currentUser.full_name || currentUser.email}</span>
               </div>
               <Link to="/dashboard"><Button size="sm" className="gap-1.5"><LayoutDashboard className="w-3.5 h-3.5" />Dashboard</Button></Link>
+              <Button size="sm" variant="ghost" onClick={handleLogout} className="gap-1.5"><LogOut className="w-3.5 h-3.5" />Logout</Button>
             </>
           ) : (
             <>
