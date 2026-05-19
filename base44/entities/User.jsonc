@@ -16,5 +16,6 @@
       "type": "string",
       "description": "Profile avatar image URL"
     }
-  }
+  },
+  "required": []
 }
