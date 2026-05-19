@@ -118,11 +118,15 @@ export default function Layout() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-sidebar-accent transition-all">
-                <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  {user?.full_name?.[0] || "U"}
-                </div>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {(user?.display_name || user?.full_name)?.[0] || "U"}
+                  </div>
+                )}
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sidebar-foreground text-sm font-medium truncate">{user?.full_name || "User"}</p>
+                  <p className="text-sidebar-foreground text-sm font-medium truncate">{user?.display_name || user?.full_name || "User"}</p>
                   <p className="text-sidebar-foreground/50 text-xs capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-sidebar-foreground/50 flex-shrink-0" />
