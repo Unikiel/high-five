@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { theme } = useTheme();
 
   // Avatar state
@@ -35,19 +35,32 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setAvatarUrl(file_url);
-    await base44.auth.updateMe({ avatar_url: file_url });
-    setAvatarUploading(false);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAvatarUrl(file_url);
+      await base44.auth.updateMe({ avatar_url: file_url });
+      if (refreshUser) await refreshUser();
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const saveName = async () => {
     if (!displayName.trim()) return;
     setNameSaving(true);
-    await base44.auth.updateMe({ full_name: displayName.trim() });
-    setNameMsg("Name updated!");
-    setEditingName(false);
-    setNameSaving(false);
+    try {
+      await base44.auth.updateMe({ full_name: displayName.trim() });
+      if (refreshUser) await refreshUser();
+      setNameMsg("Name updated!");
+      setEditingName(false);
+    } catch (err) {
+      setNameMsg("Failed to update name");
+      console.error(err);
+    } finally {
+      setNameSaving(false);
+    }
     setTimeout(() => setNameMsg(""), 3000);
   };
 
@@ -61,10 +74,16 @@ export default function Settings() {
       return;
     }
     setPwSaving(true);
-    await base44.auth.updateMe({ password: pwForm.newPw });
-    setPwMsg({ text: "Password updated successfully!", ok: true });
-    setPwForm({ current: "", newPw: "", confirm: "" });
-    setPwSaving(false);
+    try {
+      await base44.auth.updateMe({ password: pwForm.newPw });
+      setPwMsg({ text: "Password updated successfully!", ok: true });
+      setPwForm({ current: "", newPw: "", confirm: "" });
+    } catch (err) {
+      setPwMsg({ text: "Failed to update password", ok: false });
+      console.error(err);
+    } finally {
+      setPwSaving(false);
+    }
     setTimeout(() => setPwMsg({ text: "", ok: false }), 4000);
   };
 
