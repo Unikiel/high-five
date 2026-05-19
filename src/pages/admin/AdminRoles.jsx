@@ -35,9 +35,9 @@ const PAGES = [
 
 // Default access matrix — source of truth for what each role can access
 const DEFAULT_MATRIX = {
-  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true },
-  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
-  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: true,  admin_reports: true,  admin_sessions: true,  admin_billing: true,  admin_roles: true  },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: true,  admin_sessions: true,  admin_billing: false, admin_roles: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: false, admin_sessions: true,  admin_billing: false, admin_roles: false },
   student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
 };
 
