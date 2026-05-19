@@ -2,7 +2,7 @@ export const COURSES = [
   {
     code: "AP_CALC_AB",
     name: "AP Calculus AB",
-    color: "#3B82F6",
+    color: "#0066FF",
     icon: "📈",
     description: "Limits, derivatives, integrals, and the Fundamental Theorem of Calculus.",
     units: [
@@ -19,7 +19,7 @@ export const COURSES = [
   {
     code: "AP_CALC_BC",
     name: "AP Calculus BC",
-    color: "#8B5CF6",
+    color: "#9D4EDD",
     icon: "🧠",
     description: "All of Calculus AB plus sequences/series, parametric, polar, and vector functions.",
     units: [
@@ -54,7 +54,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_2",
     name: "AP Physics 2",
-    color: "#F97316",
+    color: "#FF6B35",
     icon: "🔬",
     description: "Algebra-based fluid mechanics, thermodynamics, E&M, optics, and atomic/nuclear physics.",
     units: [
@@ -70,7 +70,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CM",
     name: "AP Physics C: Mechanics",
-    color: "#DC2626",
+    color: "#D62828",
     icon: "🚀",
     description: "Calculus-based mechanics: kinematics, dynamics, energy, momentum, rotation, oscillations.",
     units: [
@@ -133,7 +133,7 @@ export const COURSES = [
   {
     code: "AP_STATS",
     name: "AP Statistics",
-    color: "#F59E0B",
+    color: "#FF9F1C",
     icon: "📊",
     description: "Exploring data, collecting data, probability, and statistical inference.",
     units: [
@@ -151,7 +151,7 @@ export const COURSES = [
   {
     code: "AP_PRECALC",
     name: "AP Precalculus",
-    color: "#6366F1",
+    color: "#7209B7",
     icon: "📐",
     description: "Polynomial, rational, exponential, logarithmic, and trigonometric functions.",
     units: [
