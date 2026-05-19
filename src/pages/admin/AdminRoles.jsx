@@ -151,7 +151,12 @@ export default function AdminRoles() {
       {/* Users by Role */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {ROLES.map(role => {
-          const members = allUsers.filter(u => (u.role || "student") === role.id);
+          const members = allUsers.filter(u => {
+            const r = u.role || "student";
+            // The platform may store newly registered users as "user" — treat it as "student"
+            const normalised = r === "user" ? "student" : r;
+            return normalised === role.id;
+          });
           return (
             <Card key={role.id} className="border-border/50">
               <CardHeader className="pb-2 pt-4 px-5">
@@ -263,7 +268,7 @@ export default function AdminRoles() {
           <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
             <div>
               <h2 className="font-display text-lg font-bold text-foreground">Invite User</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform. After they register, set their role here.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform. Once they register, find them in the Student card and update their role here.</p>
             </div>
 
             <div className="space-y-2">
