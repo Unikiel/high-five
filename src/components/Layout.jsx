@@ -66,7 +66,7 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 flex flex-col bg-sidebar border-r border-sidebar-border transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border">
+        <Link to="/" className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border hover:opacity-80 transition-opacity">
           <img src={LOGO_URL} alt="High Five" className="w-9 h-9 rounded-lg object-cover" />
           <div>
             <h1 className="font-display font-bold text-white text-lg leading-tight">High Five</h1>
@@ -75,7 +75,7 @@ export default function Layout() {
           <button className="lg:hidden ml-auto text-sidebar-foreground/60 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X className="w-5 h-5" />
           </button>
-        </div>
+        </Link>
 
         {/* Slogan */}
         <div className="px-5 py-3 border-b border-sidebar-border">
