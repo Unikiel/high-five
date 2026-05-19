@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
-import { CheckCircle, Target, TrendingUp, Calendar, Brain, Shield, BookOpen, Zap, Star, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle, Target, TrendingUp, Calendar, Brain, Shield, BookOpen, Zap, Star, ArrowRight, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
+import { base44 } from "@/api/base44Client";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/64f6122bc_generated_image.png";
 
 export default function Landing() {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(authed => {
+      if (authed) base44.auth.me().then(setCurrentUser).catch(() => {});
+    });
+  }, []);
   const features = [
     { icon: BookOpen, title: "10 AP Courses", desc: "Full College Board-aligned content for every AP subject you need.", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },
     { icon: Brain, title: "Adaptive Practice", desc: "AI adjusts difficulty based on your mastery and exam scores.", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" },
@@ -27,10 +36,24 @@ export default function Landing() {
             <p className="text-xs text-muted-foreground leading-none">AP Prep Platform</p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <Link to="/pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
-          <Link to="/login"><Button variant="outline" size="sm">Sign In</Button></Link>
-          <Link to="/register"><Button size="sm" className="gap-1.5"><Zap className="w-3.5 h-3.5" />Get Started</Button></Link>
+          {currentUser ? (
+            <>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                  {currentUser.full_name?.[0] || currentUser.email?.[0] || "?"}
+                </div>
+                <span className="hidden sm:block font-medium text-foreground">{currentUser.full_name || currentUser.email}</span>
+              </div>
+              <Link to="/dashboard"><Button size="sm" className="gap-1.5"><LayoutDashboard className="w-3.5 h-3.5" />Dashboard</Button></Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login"><Button variant="outline" size="sm">Sign In</Button></Link>
+              <Link to="/register"><Button size="sm" className="gap-1.5"><Zap className="w-3.5 h-3.5" />Get Started</Button></Link>
+            </>
+          )}
         </div>
       </nav>
 
