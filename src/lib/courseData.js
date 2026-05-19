@@ -2,7 +2,7 @@ export const COURSES = [
   {
     code: "AP_CALC_AB",
     name: "AP Calculus AB",
-    color: "#8B9DC3",
+    color: "#2563EB",
     icon: "AB",
     description: "Limits, derivatives, integrals, and the Fundamental Theorem of Calculus.",
     units: [
@@ -19,7 +19,7 @@ export const COURSES = [
   {
     code: "AP_CALC_BC",
     name: "AP Calculus BC",
-    color: "#B39DDB",
+    color: "#7C3AED",
     icon: "BC",
     description: "All of Calculus AB plus sequences/series, parametric, polar, and vector functions.",
     units: [
@@ -38,7 +38,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_1",
     name: "AP Physics 1",
-    color: "#F8B4A3",
+    color: "#DC2626",
     icon: "P1",
     description: "Algebra-based mechanics, waves, circuits, and modern physics.",
     units: [
@@ -54,7 +54,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_2",
     name: "AP Physics 2",
-    color: "#D9A397",
+    color: "#B91C1C",
     icon: "P2",
     description: "Algebra-based fluid mechanics, thermodynamics, E&M, optics, and atomic/nuclear physics.",
     units: [
@@ -70,7 +70,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CM",
     name: "AP Physics C: Mechanics",
-    color: "#E8A894",
+    color: "#EA580C",
     icon: "CM",
     description: "Calculus-based mechanics: kinematics, dynamics, energy, momentum, rotation, oscillations.",
     units: [
@@ -86,7 +86,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CE",
     name: "AP Physics C: E&M",
-    color: "#F0A89B",
+    color: "#C026D3",
     icon: "EM",
     description: "Calculus-based electricity and magnetism: fields, circuits, induction.",
     units: [
@@ -100,7 +100,7 @@ export const COURSES = [
   {
     code: "AP_CSP",
     name: "AP Computer Science Principles",
-    color: "#A8D5BA",
+    color: "#059669",
     icon: "CP",
     description: "Computing innovations, data, algorithms, programming, internet, and societal impacts.",
     units: [
@@ -114,7 +114,7 @@ export const COURSES = [
   {
     code: "AP_CSA",
     name: "AP Computer Science A",
-    color: "#9BCFA3",
+    color: "#0891B2",
     icon: "CA",
     description: "Object-oriented programming in Java: classes, inheritance, arrays, recursion, algorithms.",
     units: [
@@ -133,7 +133,7 @@ export const COURSES = [
   {
     code: "AP_STATS",
     name: "AP Statistics",
-    color: "#F4C4A0",
+    color: "#EA580C",
     icon: "ST",
     description: "Exploring data, collecting data, probability, and statistical inference.",
     units: [
@@ -151,7 +151,7 @@ export const COURSES = [
   {
     code: "AP_PRECALC",
     name: "AP Precalculus",
-    color: "#D4A7E0",
+    color: "#A855F7",
     icon: "PC",
     description: "Polynomial, rational, exponential, logarithmic, and trigonometric functions.",
     units: [
