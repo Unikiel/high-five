@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
@@ -25,6 +25,14 @@ export default function Settings() {
   const [displayName, setDisplayName] = useState(user?.full_name || "");
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState("");
+
+  // Sync state when user updates
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.full_name || "");
+      setAvatarUrl(user.avatar_url || "");
+    }
+  }, [user?.id, user?.full_name, user?.avatar_url]);
 
   // Password change state
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
