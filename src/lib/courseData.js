@@ -54,7 +54,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_2",
     name: "AP Physics 2",
-    color: "#FF6B35",
+    color: "#E60000",
     icon: "🔬",
     description: "Algebra-based fluid mechanics, thermodynamics, E&M, optics, and atomic/nuclear physics.",
     units: [
@@ -70,7 +70,7 @@ export const COURSES = [
   {
     code: "AP_PHYSICS_CM",
     name: "AP Physics C: Mechanics",
-    color: "#D62828",
+    color: "#C41E3A",
     icon: "🚀",
     description: "Calculus-based mechanics: kinematics, dynamics, energy, momentum, rotation, oscillations.",
     units: [
