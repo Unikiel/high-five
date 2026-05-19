@@ -32,7 +32,7 @@ export default function AdminOverview() {
     setLoading(false);
   };
 
-  const students = users.filter(u => u.role === "user");
+  const students = users.filter(u => u.role === "student" || u.role === "user" || !u.role);
   const completedExams = exams.filter(e => e.status === "completed");
   const avgScore = completedExams.length > 0
     ? Math.round(completedExams.reduce((s, e) => s + (e.score || 0), 0) / completedExams.length)

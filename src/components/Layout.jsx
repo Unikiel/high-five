@@ -123,7 +123,7 @@ export default function Layout() {
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-sidebar-foreground text-sm font-medium truncate">{user?.full_name || "User"}</p>
-                  <p className="text-sidebar-foreground/50 text-xs capitalize">{user?.role || "student"}</p>
+                  <p className="text-sidebar-foreground/50 text-xs capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-sidebar-foreground/50 flex-shrink-0" />
               </button>

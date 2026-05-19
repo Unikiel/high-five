@@ -26,7 +26,7 @@ export default function AdminStudents() {
         base44.entities.Enrollment.list(),
         base44.entities.Exam.list()
       ]);
-      setStudents(u.filter(u => u.role === "user" || !u.role));
+      setStudents(u.filter(u => u.role === "student" || u.role === "user" || !u.role));
       setEnrollments(e);
       setExams(ex);
     } catch (err) {}
