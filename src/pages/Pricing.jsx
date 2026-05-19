@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/1cab3125e_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
 
 export default function Pricing() {
   const [plans, setPlans] = useState([]);

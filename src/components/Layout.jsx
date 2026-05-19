@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/1cab3125e_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
 
 const studentNav = [
   { path: "/dashboard", icon: Home, label: "Dashboard" },
