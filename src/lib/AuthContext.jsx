@@ -116,15 +116,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = (shouldRedirect = true) => {
+    // Clear local state immediately for instant UI response
     setUser(null);
     setIsAuthenticated(false);
-    
+
     if (shouldRedirect) {
       base44.auth.logout('/');
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+      return;
     }
+
+    // Fire-and-forget the backend logout so the UI doesn't wait on the network round-trip
+    try { base44.auth.logout(); } catch { /* ignore */ }
   };
 
   const navigateToLogin = () => {
