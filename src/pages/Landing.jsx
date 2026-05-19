@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 import { base44 } from "@/api/base44Client";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/3501faa08_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/9fcf9f355_generated_image.png";
 
 export default function Landing() {
   const [currentUser, setCurrentUser] = useState(null);
