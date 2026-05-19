@@ -51,10 +51,9 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === "user_not_registered") {
       return <UserNotRegisteredError />;
-    } else if (authError.type === "auth_required") {
-      navigateToLogin();
-      return null;
     }
+    // For auth_required or other errors, fall through and let the Routes handle it
+    // (ProtectedRoute will redirect to /login, public routes render normally)
   }
 
   return (
