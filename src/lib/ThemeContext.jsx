@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem('hf-theme') || 'system');
+  const [theme, setTheme] = useState(() => localStorage.getItem('hf-theme') || 'light');
 
   useEffect(() => {
     applyTheme(theme);
