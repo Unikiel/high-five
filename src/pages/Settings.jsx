@@ -45,8 +45,10 @@ export default function Settings() {
     setAvatarUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setAvatarUrl(file_url);
-      await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
+      const result = await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
+      if (result.data?.user?.avatar_url) {
+        setAvatarUrl(result.data.user.avatar_url);
+      }
     } catch (err) {
       console.error("Avatar upload failed:", err);
     } finally {
