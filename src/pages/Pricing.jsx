@@ -11,6 +11,8 @@ const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff1
 export default function Pricing() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutPlanId, setCheckoutPlanId] = useState(null);
+  const checkoutStatus = new URLSearchParams(window.location.search).get("checkout");
 
   useEffect(() => {
     base44.entities.Subscription.filter({ is_active: true })
@@ -26,6 +28,21 @@ export default function Pricing() {
     weekly: { border: "border-border", header: "bg-muted/50", badge: null, cta: "bg-foreground text-background hover:bg-foreground/90" },
     monthly: { border: "border-primary ring-2 ring-primary/20", header: "bg-primary text-white", badge: "Most Popular", cta: "bg-primary hover:bg-primary/90 text-white" },
     yearly: { border: "border-green-500 ring-2 ring-green-500/20", header: "bg-green-600 text-white", badge: "Best Value", cta: "bg-green-600 hover:bg-green-700 text-white" },
+  };
+
+  const handleCheckout = async (plan) => {
+    if (window.self !== window.top) {
+      alert("Checkout works only from the published app. Please publish and open the app in a new tab to test payments.");
+      return;
+    }
+
+    setCheckoutPlanId(plan.id);
+    const response = await base44.functions.invoke("createCheckoutSession", {
+      priceId: plan.stripe_price_id,
+      planId: plan.id,
+      planType: plan.plan_type
+    });
+    window.location.href = response.data.url;
   };
 
   return (
@@ -53,6 +70,17 @@ export default function Pricing() {
             Full access to all 10 courses, unlimited practice exams, and adaptive AI coaching.
           </p>
         </div>
+
+        {checkoutStatus === "success" && (
+          <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            Payment successful. Your access is being activated.
+          </div>
+        )}
+        {checkoutStatus === "cancelled" && (
+          <div className="mb-6 rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+            Checkout was cancelled. You can choose a plan whenever you're ready.
+          </div>
+        )}
 
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
@@ -93,11 +121,13 @@ export default function Pricing() {
                         </li>
                       ))}
                     </ul>
-                    <Link to="/register">
-                      <Button className={`w-full ${style.cta}`}>
-                        Get Started
-                      </Button>
-                    </Link>
+                    <Button
+                      className={`w-full ${style.cta}`}
+                      disabled={!plan.stripe_price_id || checkoutPlanId === plan.id}
+                      onClick={() => handleCheckout(plan)}
+                    >
+                      {checkoutPlanId === plan.id ? "Opening checkout..." : "Start 7-day trial"}
+                    </Button>
                   </CardContent>
                 </Card>
               );

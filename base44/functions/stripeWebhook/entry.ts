@@ -35,6 +35,17 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object;
+      const payments = await base44.asServiceRole.entities.Payment.filter({ stripe_subscription_id: subscription.id }, '-created_date', 1);
+      if (payments[0]) {
+        await base44.asServiceRole.entities.Payment.update(payments[0].id, {
+          status: subscription.status === 'active' || subscription.status === 'trialing' ? 'active' : 'expired',
+          access_until: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : payments[0].access_until || ''
+        });
+      }
+    }
+
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object;
       const payments = await base44.asServiceRole.entities.Payment.filter({ stripe_subscription_id: subscription.id }, '-created_date', 1);

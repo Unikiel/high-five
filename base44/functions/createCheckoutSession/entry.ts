@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing plan details' }, { status: 400 });
     }
 
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || '';
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || 'https://high-five.base44.app';
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
