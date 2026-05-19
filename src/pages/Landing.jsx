@@ -37,15 +37,15 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       {/* Nav */}
       <nav className="border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur z-50 gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <img src={LOGO_URL} alt="High Five" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover flex-shrink-0" />
-          <div className="min-w-0">
-            <span className="font-display font-bold text-foreground text-base sm:text-lg leading-tight">High Five</span>
-            <p className="hidden sm:block text-xs text-muted-foreground leading-none">Exam Prep Platform</p>
+        <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
+          <img src={LOGO_URL} alt="High Five" className="w-9 h-9 sm:w-9 sm:h-9 rounded-xl object-cover flex-shrink-0" />
+          <div className="hidden sm:block min-w-0">
+            <span className="font-display font-bold text-foreground text-lg leading-tight">High Five</span>
+            <p className="text-xs text-muted-foreground leading-none">Exam Prep Platform</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-          <Link to="/pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
+          <Link to="/pricing"><Button variant="ghost" size="sm" className="px-2.5 sm:px-3">Pricing</Button></Link>
           {currentUser ? (
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -58,8 +58,8 @@ export default function Landing() {
                 )}
                 <span className="hidden sm:block font-medium text-foreground">{getDisplayName(currentUser)}</span>
               </div>
-              <Link to="/dashboard"><Button size="sm" className="gap-1.5"><LayoutDashboard className="w-3.5 h-3.5" />Dashboard</Button></Link>
-              <Button size="sm" variant="ghost" onClick={handleLogout} className="gap-1.5"><LogOut className="w-3.5 h-3.5" />Logout</Button>
+              <Link to="/dashboard"><Button size="sm" className="gap-1.5 px-3 sm:px-4" aria-label="Dashboard"><LayoutDashboard className="w-3.5 h-3.5" /><span className="hidden sm:inline">Dashboard</span></Button></Link>
+              <Button size="sm" variant="ghost" onClick={handleLogout} className="gap-1.5 px-3 sm:px-4" aria-label="Logout"><LogOut className="w-3.5 h-3.5" /><span className="hidden sm:inline">Logout</span></Button>
             </>
           ) : (
             <>
