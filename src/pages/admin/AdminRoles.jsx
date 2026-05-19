@@ -13,7 +13,7 @@ const ROLES = [
   { id: "admin", label: "Admin", color: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400" },
   { id: "tutor", label: "Tutor", color: "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400" },
   { id: "assistant", label: "Assistant", color: "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400" },
-  { id: "user", label: "Student", color: "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400" },
+  { id: "student", label: "Student", color: "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400" },
 ];
 
 const PAGES = [
@@ -37,7 +37,7 @@ const DEFAULT_MATRIX = {
   admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true },
   tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: false, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: false, admin_roles: false },
   assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: false, admin_courses: false, admin_reports: true, admin_sessions: true, admin_billing: false, admin_roles: false },
-  user:      { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
 };
 
 const STORAGE_KEY = "hf-role-matrix";
@@ -58,21 +58,21 @@ export default function AdminRoles() {
   const [allUsers, setAllUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [editUser, setEditUser] = useState(null);
-  const [editForm, setEditForm] = useState({ full_name: "", role: "user" });
+  const [editForm, setEditForm] = useState({ full_name: "", role: "student" });
   const [editSaving, setEditSaving] = useState(false);
   const [editMsg, setEditMsg] = useState("");
 
   // Invite user state
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("user");
+  const [inviteRole, setInviteRole] = useState("student");
   const [inviteSending, setInviteSending] = useState(false);
   const [inviteMsg, setInviteMsg] = useState({ text: "", ok: false });
 
   const sendInvite = async () => {
     if (!inviteEmail.trim()) return;
     setInviteSending(true);
-    // inviteUser only accepts "user" or "admin" — custom roles (tutor, assistant) use "user" base role
+    // inviteUser only accepts "user" or "admin" — student/tutor/assistant all use "user" as base role
     const baseRole = inviteRole === "admin" ? "admin" : "user";
     await base44.users.inviteUser(inviteEmail.trim(), baseRole);
     setInviteMsg({ text: `Invite sent to ${inviteEmail}!`, ok: true });
@@ -91,7 +91,7 @@ export default function AdminRoles() {
 
   const openEdit = (u) => {
     setEditUser(u);
-    setEditForm({ full_name: u.full_name || "", role: u.role || "user" });
+    setEditForm({ full_name: u.full_name || "", role: u.role || "student" });
     setEditMsg("");
   };
 
@@ -151,7 +151,7 @@ export default function AdminRoles() {
       {/* Users by Role */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {ROLES.map(role => {
-          const members = allUsers.filter(u => (u.role || "user") === role.id);
+          const members = allUsers.filter(u => (u.role || "student") === role.id);
           return (
             <Card key={role.id} className="border-border/50">
               <CardHeader className="pb-2 pt-4 px-5">

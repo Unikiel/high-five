@@ -8,9 +8,9 @@
         "admin",
         "tutor",
         "assistant",
-        "user"
+        "student"
       ],
-      "default": "user"
+      "default": "student"
     },
     "avatar_url": {
       "type": "string",

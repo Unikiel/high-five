@@ -114,7 +114,7 @@ export default function Settings() {
             <div>
               <p className="font-semibold text-foreground">{user?.full_name}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
-              <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role || "student"}</Badge>
+              <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</Badge>
               <p className="text-xs text-muted-foreground mt-1">Click avatar to change photo</p>
             </div>
           </div>

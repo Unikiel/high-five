@@ -43,6 +43,7 @@ export default function Layout() {
   const isAdmin = user?.role === "admin";
   const isTutor = user?.role === "tutor" || user?.role === "assistant";
   const isStaff = isAdmin || isTutor;
+  // "student" is the default role (replaces the platform's internal "user" label)
   const navItems = isStaff ? staffNav : studentNav;
 
   useEffect(() => {
