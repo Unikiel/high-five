@@ -46,9 +46,7 @@ export default function Settings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const result = await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
-      if (result.data?.user?.avatar_url) {
-        setAvatarUrl(result.data.user.avatar_url);
-      }
+      setAvatarUrl(result.data?.avatar_url || file_url);
     } catch (err) {
       console.error("Avatar upload failed:", err);
     } finally {
@@ -159,8 +157,8 @@ export default function Settings() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <p className="text-sm text-foreground">{user?.full_name || "—"}</p>
-                <button onClick={() => setEditingName(true)} className="text-muted-foreground hover:text-primary">
+                <p className="text-sm text-foreground">{displayName || "—"}</p>
+                <button onClick={() => { setEditingName(true); }} className="text-muted-foreground hover:text-primary">
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
               </div>
