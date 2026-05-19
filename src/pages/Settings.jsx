@@ -40,7 +40,7 @@ export default function Settings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
-      await checkUserAuth();
+      await checkUserAuth({ silent: true });
     } catch (err) {
       console.error("Avatar upload failed:", err);
     } finally {
@@ -54,7 +54,7 @@ export default function Settings() {
     setNameSaving(true);
     try {
       await base44.functions.invoke('updateUserProfile', { display_name: trimmedName });
-      await checkUserAuth();
+      await checkUserAuth({ silent: true });
       setNameMsg("Name updated!");
       setEditingName(false);
     } catch (err) {

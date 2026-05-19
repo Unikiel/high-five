@@ -89,10 +89,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkUserAuth = async () => {
+  const checkUserAuth = async ({ silent = false } = {}) => {
     try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
+      // Only show the global loading spinner on the initial check.
+      // Silent refreshes (e.g. after profile update) shouldn't unmount the page.
+      if (!silent) setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
