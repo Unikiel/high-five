@@ -89,9 +89,11 @@ export default function Courses() {
               <div className="h-1.5 w-full" style={{ backgroundColor: course.color }} />
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 rounded-xl flex items-center justify-center text-4xl text-gray-900 dark:text-white shadow-md"
+                  <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
                     style={{ backgroundColor: course.color }}>
-                    {course.icon}
+                    <span className="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+                      {course.icon}
+                    </span>
                   </div>
                   {enrolled ? (
                     <Badge className="bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400 border-0 text-xs">

@@ -3,7 +3,7 @@ export const COURSES = [
     code: "AP_CALC_AB",
     name: "AP Calculus AB",
     color: "#8B9DC3",
-    icon: "📈",
+    icon: "AB",
     description: "Limits, derivatives, integrals, and the Fundamental Theorem of Calculus.",
     units: [
       { number: 1, title: "Limits and Continuity", weight: "10-12%" },
@@ -20,7 +20,7 @@ export const COURSES = [
     code: "AP_CALC_BC",
     name: "AP Calculus BC",
     color: "#B39DDB",
-    icon: "🧠",
+    icon: "BC",
     description: "All of Calculus AB plus sequences/series, parametric, polar, and vector functions.",
     units: [
       { number: 1, title: "Limits and Continuity", weight: "4-7%" },
@@ -39,7 +39,7 @@ export const COURSES = [
     code: "AP_PHYSICS_1",
     name: "AP Physics 1",
     color: "#F8B4A3",
-    icon: "⚡",
+    icon: "P1",
     description: "Algebra-based mechanics, waves, circuits, and modern physics.",
     units: [
       { number: 1, title: "Kinematics", weight: "12-18%" },
@@ -55,7 +55,7 @@ export const COURSES = [
     code: "AP_PHYSICS_2",
     name: "AP Physics 2",
     color: "#D9A397",
-    icon: "🔬",
+    icon: "P2",
     description: "Algebra-based fluid mechanics, thermodynamics, E&M, optics, and atomic/nuclear physics.",
     units: [
       { number: 1, title: "Fluids", weight: "10-12%" },
@@ -71,7 +71,7 @@ export const COURSES = [
     code: "AP_PHYSICS_CM",
     name: "AP Physics C: Mechanics",
     color: "#E8A894",
-    icon: "🚀",
+    icon: "CM",
     description: "Calculus-based mechanics: kinematics, dynamics, energy, momentum, rotation, oscillations.",
     units: [
       { number: 1, title: "Kinematics", weight: "10-15%" },
@@ -87,7 +87,7 @@ export const COURSES = [
     code: "AP_PHYSICS_CE",
     name: "AP Physics C: E&M",
     color: "#F0A89B",
-    icon: "⚛️",
+    icon: "EM",
     description: "Calculus-based electricity and magnetism: fields, circuits, induction.",
     units: [
       { number: 1, title: "Electrostatics", weight: "25-30%" },
@@ -101,7 +101,7 @@ export const COURSES = [
     code: "AP_CSP",
     name: "AP Computer Science Principles",
     color: "#A8D5BA",
-    icon: "💻",
+    icon: "CP",
     description: "Computing innovations, data, algorithms, programming, internet, and societal impacts.",
     units: [
       { number: 1, title: "Creative Development", weight: "10-13%" },
@@ -115,7 +115,7 @@ export const COURSES = [
     code: "AP_CSA",
     name: "AP Computer Science A",
     color: "#9BCFA3",
-    icon: "☕",
+    icon: "CA",
     description: "Object-oriented programming in Java: classes, inheritance, arrays, recursion, algorithms.",
     units: [
       { number: 1, title: "Primitive Types", weight: "2-5%" },
@@ -134,7 +134,7 @@ export const COURSES = [
     code: "AP_STATS",
     name: "AP Statistics",
     color: "#F4C4A0",
-    icon: "📊",
+    icon: "ST",
     description: "Exploring data, collecting data, probability, and statistical inference.",
     units: [
       { number: 1, title: "Exploring One-Variable Data", weight: "15-23%" },
@@ -152,7 +152,7 @@ export const COURSES = [
     code: "AP_PRECALC",
     name: "AP Precalculus",
     color: "#D4A7E0",
-    icon: "📐",
+    icon: "PC",
     description: "Polynomial, rational, exponential, logarithmic, and trigonometric functions.",
     units: [
       { number: 1, title: "Polynomial and Rational Functions", weight: "30-40%" },
