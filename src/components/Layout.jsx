@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
@@ -42,9 +42,10 @@ const DEFAULT_MATRIX = {
 };
 
 export default function Layout() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, changeTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const getNavItems = () => {
@@ -64,7 +65,11 @@ export default function Layout() {
 
   const navItems = getNavItems();
 
-  const handleLogout = () => base44.auth.logout("/");
+  const handleLogout = () => {
+    // Clear token + local state without backend round-trip, then SPA-navigate home (no full reload)
+    logout(false);
+    navigate("/", { replace: true });
+  };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
