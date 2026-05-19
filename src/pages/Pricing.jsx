@@ -43,6 +43,9 @@ export default function Pricing() {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-16">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+          ← Back to Home
+        </Link>
         <div className="text-center mb-14">
           <Badge className="mb-4 bg-primary/10 text-primary border-0">Pricing</Badge>
           <h1 className="font-display text-5xl font-bold text-foreground mb-4">Invest in your 5</h1>

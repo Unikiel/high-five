@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 
 // Sample question generator (in production, questions come from DB via LLM)
 const generateSampleQuestions = (count, courseId) => {
@@ -179,6 +180,9 @@ export default function PracticeExam() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/95 backdrop-blur px-6 py-3 flex items-center gap-4">
+        <Link to="/practice" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+          <ChevronLeft className="w-4 h-4" />Exit
+        </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">Question {current + 1}/{questions.length}</span>

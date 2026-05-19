@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import BackLink from "@/components/BackLink";
 
 const STATUS_CONFIG = {
   pending: { color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400", icon: AlertCircle },
@@ -80,9 +81,9 @@ export default function Tutoring() {
     return (
       <Card className="border-border/50">
         <CardContent className="p-4 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl text-white flex-shrink-0"
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-display font-bold text-white flex-shrink-0"
             style={{ backgroundColor: course?.color || "#6366f1" }}>
-            {course?.icon || "📚"}
+            {course?.icon || "AP"}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -107,6 +108,7 @@ export default function Tutoring() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">1-on-1 Tutoring</h1>

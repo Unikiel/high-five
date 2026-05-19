@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import BackLink from "@/components/BackLink";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -58,6 +59,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <BackLink to="/" label="Back to Home" />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

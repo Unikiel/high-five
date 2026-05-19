@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import ThemeSelector from "@/components/ThemeSelector";
+import BackLink from "@/components/BackLink";
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -93,6 +94,7 @@ export default function Settings() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-8">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div>
         <h1 className="font-display text-3xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">Manage your account and preferences</p>

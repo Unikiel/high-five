@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
+import BackLink from "@/components/BackLink";
 
 export default function AdminOverview() {
   const { user } = useAuth();
@@ -55,6 +56,7 @@ export default function AdminOverview() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div>
         <h1 className="font-display text-3xl font-bold text-foreground">Admin Overview</h1>
         <p className="text-muted-foreground mt-1">Platform statistics and management</p>
@@ -121,9 +123,9 @@ export default function AdminOverview() {
               const course = COURSES.find(c => c.code === s.course_id);
               return (
                 <div key={s.id} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm flex-shrink-0"
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-display font-bold flex-shrink-0"
                     style={{ backgroundColor: course?.color || "#6366f1" }}>
-                    {course?.icon || "📚"}
+                    {course?.icon || "AP"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{s.student_id}</p>

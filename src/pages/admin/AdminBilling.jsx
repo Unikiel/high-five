@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import BackLink from "@/components/BackLink";
 
 const DEFAULT_PLANS = [
   { plan_name: "Weekly", plan_type: "weekly", price: 9.99, original_price: 9.99, discount_percent: 0, is_active: true, features: ["All 10 AP Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking"] },
@@ -71,6 +72,7 @@ export default function AdminBilling() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
+      <BackLink to="/admin" label="Back to Admin" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Subscription Plans</h1>

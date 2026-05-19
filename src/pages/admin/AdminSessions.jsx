@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import BackLink from "@/components/BackLink";
 
 export default function AdminSessions() {
   const { user } = useAuth();
@@ -58,6 +59,7 @@ export default function AdminSessions() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <BackLink to="/admin" label="Back to Admin" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Tutoring Sessions</h1>
@@ -92,9 +94,9 @@ export default function AdminSessions() {
               <Card key={s.id} className="border-border/50">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl text-white flex-shrink-0"
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-display font-bold text-white flex-shrink-0"
                       style={{ backgroundColor: course?.color || "#6366f1" }}>
-                      {course?.icon || "📚"}
+                      {course?.icon || "AP"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">

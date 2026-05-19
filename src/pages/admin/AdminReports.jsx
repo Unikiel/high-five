@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import BackLink from "@/components/BackLink";
 
 const COLORS = ["#3B82F6", "#8B5CF6", "#EF4444", "#F97316", "#10B981", "#F59E0B", "#6366F1", "#DC2626", "#059669", "#EC4899"];
 
@@ -77,6 +78,7 @@ export default function AdminReports() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <BackLink to="/admin" label="Back to Admin" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Reports</h1>

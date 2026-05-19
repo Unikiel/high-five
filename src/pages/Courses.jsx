@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import BackLink from "@/components/BackLink";
 
 export default function Courses() {
   const { user } = useAuth();
@@ -59,6 +60,7 @@ export default function Courses() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">AP Courses</h1>

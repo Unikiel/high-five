@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import BackLink from "@/components/BackLink";
 
 export default function CourseDetail() {
   const { courseCode } = useParams();
@@ -59,6 +60,7 @@ export default function CourseDetail() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <BackLink to="/courses" label="Back to Courses" />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link to="/courses" className="hover:text-foreground">Courses</Link>
@@ -68,7 +70,7 @@ export default function CourseDetail() {
 
       {/* Header */}
       <div className="flex items-start gap-5">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-white shadow-md flex-shrink-0"
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-display font-bold text-white shadow-md flex-shrink-0"
           style={{ backgroundColor: course.color }}>
           {course.icon}
         </div>

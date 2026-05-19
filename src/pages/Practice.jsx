@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import BackLink from "@/components/BackLink";
 
 const EXAM_TYPES = [
   { id: "quick", label: "Quick Quiz", description: "10 questions, ~15 min", questions: 10, icon: Zap },
@@ -74,6 +75,7 @@ export default function Practice() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div>
         <h1 className="font-display text-3xl font-bold text-foreground">Practice Exams</h1>
         <p className="text-muted-foreground mt-1">Adaptive practice aligned with College Board standards</p>

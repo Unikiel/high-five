@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import BackLink from "@/components/BackLink";
 
 export default function ProgressPage() {
   const { user } = useAuth();
@@ -57,6 +58,7 @@ export default function ProgressPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <BackLink to="/dashboard" label="Back to Dashboard" />
       <div>
         <h1 className="font-display text-3xl font-bold text-foreground">My Progress</h1>
         <p className="text-muted-foreground mt-1">Track your learning journey across all AP courses</p>

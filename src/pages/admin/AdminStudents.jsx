@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import BackLink from "@/components/BackLink";
 
 export default function AdminStudents() {
   const { user } = useAuth();
@@ -54,6 +55,7 @@ export default function AdminStudents() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <BackLink to="/admin" label="Back to Admin" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Students</h1>

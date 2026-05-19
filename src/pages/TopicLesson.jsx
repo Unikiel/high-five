@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BackLink from "@/components/BackLink";
 
 export default function TopicLesson() {
   const { courseCode, topicId } = useParams();
@@ -91,6 +92,7 @@ export default function TopicLesson() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <BackLink to={`/courses/${courseCode}`} label="Back to Course" />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link to={`/courses/${courseCode}`} className="hover:text-foreground flex items-center gap-1">

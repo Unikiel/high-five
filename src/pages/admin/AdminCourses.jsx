@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
+import BackLink from "@/components/BackLink";
 
-const EMOJI_OPTIONS = ["📈","🧠","⚡","🔬","🚀","⚛️","💻","☕","📊","📐","🎨","🧪","🌍","📝","🎯","🔭","🧬","📉","🏛️","🎵"];
-const COLOR_OPTIONS = ["#3B82F6","#8B5CF6","#EF4444","#F97316","#DC2626","#B91C1C","#10B981","#059669","#F59E0B","#6366F1","#EC4899","#14B8A6","#84CC16","#F43F5E","#0EA5E9"];
+// Text-letter icons (2 chars) — matches the rest of the app (e.g. "AB", "BC", "P1", "CS").
+const ICON_OPTIONS = ["AB","BC","P1","P2","CM","EM","CP","CA","ST","PC","CH","BI","EN","HS","WH","US","EC","PS","AR","MU"];
+const COLOR_OPTIONS = ["#2563EB","#7C3AED","#DC2626","#B91C1C","#EA580C","#C026D3","#059669","#0891B2","#A855F7","#F59E0B","#10B981","#6366F1","#EC4899","#14B8A6","#0EA5E9"];
 
-const EMPTY_FORM = { name: "", code: "", description: "", color: "#3B82F6", icon: "📚", exam_date: "", is_active: true };
+const EMPTY_FORM = { name: "", code: "", description: "", color: "#2563EB", icon: "AB", exam_date: "", is_active: true };
 
 export default function AdminCourses() {
   const { user } = useAuth();
@@ -39,7 +41,7 @@ export default function AdminCourses() {
 
   const openEdit = (c) => {
     setEditingCourse(c);
-    setForm({ name: c.name, code: c.code, description: c.description || "", color: c.color || "#3B82F6", icon: c.icon || "📚", exam_date: c.exam_date || "", is_active: c.is_active !== false });
+    setForm({ name: c.name, code: c.code, description: c.description || "", color: c.color || "#2563EB", icon: c.icon || "AB", exam_date: c.exam_date || "", is_active: c.is_active !== false });
     setShowForm(true);
   };
 
@@ -65,6 +67,7 @@ export default function AdminCourses() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <BackLink to="/admin" label="Back to Admin" />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Course Manager</h1>
@@ -93,7 +96,7 @@ export default function AdminCourses() {
               <div className="h-1.5 w-full" style={{ backgroundColor: course.color }} />
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl text-white shadow-sm"
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-display font-bold text-white shadow-sm"
                     style={{ backgroundColor: course.color }}>
                     {course.icon}
                   </div>
@@ -171,14 +174,21 @@ export default function AdminCourses() {
               </div>
             </div>
 
-            {/* Icon picker */}
+            {/* Icon picker — text letters (e.g. AB, BC, P1) */}
             <div className="space-y-2">
-              <Label>Icon</Label>
-              <div className="flex flex-wrap gap-2">
-                {EMOJI_OPTIONS.map(e => (
-                  <button key={e} onClick={() => setForm(f => ({ ...f, icon: e }))}
-                    className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition-all ${form.icon === e ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}>
-                    {e}
+              <Label>Icon (2 letters)</Label>
+              <Input
+                value={form.icon}
+                maxLength={3}
+                onChange={e => setForm(f => ({ ...f, icon: e.target.value.toUpperCase() }))}
+                placeholder="e.g. AB"
+                className="w-32 font-display font-bold"
+              />
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {ICON_OPTIONS.map(ic => (
+                  <button key={ic} onClick={() => setForm(f => ({ ...f, icon: ic }))}
+                    className={`w-10 h-9 rounded-lg font-display text-sm font-bold flex items-center justify-center border-2 transition-all ${form.icon === ic ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+                    {ic}
                   </button>
                 ))}
               </div>
@@ -186,7 +196,7 @@ export default function AdminCourses() {
 
             {/* Preview */}
             <div className="p-4 rounded-xl border border-border bg-muted/20 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl text-white" style={{ backgroundColor: form.color }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-display font-bold text-white" style={{ backgroundColor: form.color }}>
                 {form.icon}
               </div>
               <div>
