@@ -3,7 +3,7 @@ export const COURSES = [
     code: "AP_CALC_AB",
     name: "AP Calculus AB",
     color: "#3B82F6",
-    icon: "∫",
+    icon: "📈",
     description: "Limits, derivatives, integrals, and the Fundamental Theorem of Calculus.",
     units: [
       { number: 1, title: "Limits and Continuity", weight: "10-12%" },
@@ -20,7 +20,7 @@ export const COURSES = [
     code: "AP_CALC_BC",
     name: "AP Calculus BC",
     color: "#8B5CF6",
-    icon: "∑",
+    icon: "🔢",
     description: "All of Calculus AB plus sequences/series, parametric, polar, and vector functions.",
     units: [
       { number: 1, title: "Limits and Continuity", weight: "4-7%" },
