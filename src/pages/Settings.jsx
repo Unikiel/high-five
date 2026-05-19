@@ -83,7 +83,7 @@ export default function Settings() {
     }
     setPwSaving(true);
     try {
-      await base44.auth.resetPassword({ newPassword: pwForm.newPw });
+      await base44.functions.invoke('updateUserProfile', { password: pwForm.newPw });
       setPwMsg({ text: "Password updated successfully!", ok: true });
       setPwForm({ current: "", newPw: "", confirm: "" });
     } catch (err) {

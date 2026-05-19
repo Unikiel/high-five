@@ -22,6 +22,9 @@ Deno.serve(async (req) => {
     if (body.role) {
       updateData.role = body.role;
     }
+    if (body.password) {
+      updateData.password = body.password;
+    }
     
     if (Object.keys(updateData).length === 0) {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
