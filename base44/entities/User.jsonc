@@ -15,6 +15,10 @@
     "avatar_url": {
       "type": "string",
       "description": "Profile avatar image URL"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Custom display name set by user"
     }
   },
   "required": []

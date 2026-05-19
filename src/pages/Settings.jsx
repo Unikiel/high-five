@@ -22,7 +22,7 @@ export default function Settings() {
 
   // Profile edit state
   const [editingName, setEditingName] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.full_name || "");
+  const [displayName, setDisplayName] = useState(user?.display_name || user?.full_name || "");
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState("");
 
@@ -31,7 +31,7 @@ export default function Settings() {
   // Sync state only when user ID actually changes (logout/login different user)
   useEffect(() => {
     if (user && user.id !== prevUserIdRef.current) {
-      setDisplayName(user.full_name || "");
+      setDisplayName(user.display_name || user.full_name || "");
       setAvatarUrl(user.avatar_url || "");
       setEditingName(false);
       prevUserIdRef.current = user.id;
@@ -64,15 +64,15 @@ export default function Settings() {
     const trimmedName = displayName.trim();
     setNameSaving(true);
     try {
-      await base44.functions.invoke('updateUserProfile', { full_name: trimmedName });
+      await base44.functions.invoke('updateUserProfile', { display_name: trimmedName });
       setDisplayName(trimmedName);
       setNameMsg("Name updated!");
       setEditingName(false);
-      if (user) user.full_name = trimmedName;
+      if (user) user.display_name = trimmedName;
     } catch (err) {
       setNameMsg("Failed to update name");
       console.error(err);
-      setDisplayName(user?.full_name || "");
+      setDisplayName(user?.display_name || user?.full_name || "");
     } finally {
       setNameSaving(false);
     }
@@ -125,7 +125,7 @@ export default function Settings() {
                 <img src={avatarUrl} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-                  {displayName?.[0] || user?.full_name?.[0] || "U"}
+                  {(displayName || user?.display_name || user?.full_name)?.[0] || "U"}
                 </div>
               )}
               <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -159,7 +159,7 @@ export default function Settings() {
                 <Button size="sm" onClick={saveName} disabled={nameSaving}>
                   {nameSaving ? "Saving…" : <><Check className="w-4 h-4 mr-1" />Save</>}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setDisplayName(user?.full_name || ""); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setDisplayName(user?.display_name || user?.full_name || ""); }}>
                   Cancel
                 </Button>
               </div>

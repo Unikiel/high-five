@@ -12,26 +12,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const updateData = {};
     
-    // Only include fields that can be updated
-    if (body.full_name) {
-      updateData.full_name = body.full_name;
-    }
-    if (body.avatar_url) {
-      updateData.avatar_url = body.avatar_url;
-    }
-    if (body.role) {
-      updateData.role = body.role;
-    }
-    if (body.password) {
-      updateData.password = body.password;
-    }
+    if (body.display_name !== undefined) updateData.display_name = body.display_name;
+    if (body.avatar_url !== undefined) updateData.avatar_url = body.avatar_url;
+    if (body.role !== undefined) updateData.role = body.role;
+    if (body.password !== undefined) updateData.password = body.password;
     
     if (Object.keys(updateData).length === 0) {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
-    // Use asServiceRole to update the user with bypass restrictions
-    const updatedUser = await base44.asServiceRole.entities.User.update(user.id, updateData);
+    const updatedUser = await base44.auth.updateMe(updateData);
     return Response.json(updatedUser);
   } catch (error) {
     console.error('Update failed:', error);
