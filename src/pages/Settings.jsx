@@ -15,28 +15,18 @@ export default function Settings() {
   const { user, checkUserAuth } = useAuth();
   const { theme } = useTheme();
 
-  // Avatar state
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
+  // Always derive from context user as source of truth
+  const currentName = user?.display_name || user?.full_name || "";
+  const currentAvatar = user?.avatar_url || "";
+
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Profile edit state
+  // Profile edit state — only used while actively editing
   const [editingName, setEditingName] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.display_name || user?.full_name || "");
+  const [draftName, setDraftName] = useState(currentName);
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState("");
-
-  const prevUserIdRef = useRef(user?.id);
-
-  // Sync state only when user ID actually changes (logout/login different user)
-  useEffect(() => {
-    if (user && user.id !== prevUserIdRef.current) {
-      setDisplayName(user.display_name || user.full_name || "");
-      setAvatarUrl(user.avatar_url || "");
-      setEditingName(false);
-      prevUserIdRef.current = user.id;
-    }
-  }, [user?.id]);
 
   // Password change state
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
@@ -50,7 +40,6 @@ export default function Settings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
-      setAvatarUrl(file_url);
       await checkUserAuth();
     } catch (err) {
       console.error("Avatar upload failed:", err);
@@ -60,19 +49,17 @@ export default function Settings() {
   };
 
   const saveName = async () => {
-    if (!displayName.trim()) return;
-    const trimmedName = displayName.trim();
+    if (!draftName.trim()) return;
+    const trimmedName = draftName.trim();
     setNameSaving(true);
     try {
       await base44.functions.invoke('updateUserProfile', { display_name: trimmedName });
-      setDisplayName(trimmedName);
+      await checkUserAuth();
       setNameMsg("Name updated!");
       setEditingName(false);
-      await checkUserAuth();
     } catch (err) {
       setNameMsg("Failed to update name");
       console.error(err);
-      setDisplayName(user?.display_name || user?.full_name || "");
     } finally {
       setNameSaving(false);
     }
@@ -121,11 +108,11 @@ export default function Settings() {
         <CardContent className="space-y-5">
           <div className="flex items-center gap-4">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
+              {currentAvatar ? (
+                <img src={currentAvatar} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-                  {(displayName || user?.display_name || user?.full_name)?.[0] || "U"}
+                  {currentName?.[0] || "U"}
                 </div>
               )}
               <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -138,7 +125,7 @@ export default function Settings() {
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
             <div>
-              <p className="font-semibold text-foreground">{displayName || user?.full_name}</p>
+              <p className="font-semibold text-foreground">{currentName}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
               <Badge variant="secondary" className="text-xs mt-1 capitalize">{user?.role === "user" ? "student" : (user?.role || "student")}</Badge>
               <p className="text-xs text-muted-foreground mt-1">Click avatar to change photo</p>
@@ -151,22 +138,22 @@ export default function Settings() {
             {editingName ? (
               <div className="flex gap-2">
                 <Input
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
+                  value={draftName}
+                  onChange={e => setDraftName(e.target.value)}
                   placeholder="Your name"
                   className="flex-1"
                 />
                 <Button size="sm" onClick={saveName} disabled={nameSaving}>
                   {nameSaving ? "Saving…" : <><Check className="w-4 h-4 mr-1" />Save</>}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setDisplayName(user?.display_name || user?.full_name || ""); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingName(false); setDraftName(currentName); }}>
                   Cancel
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <p className="text-sm text-foreground">{displayName || "—"}</p>
-                <button onClick={() => { setEditingName(true); }} className="text-muted-foreground hover:text-primary">
+                <p className="text-sm text-foreground">{currentName || "—"}</p>
+                <button onClick={() => { setDraftName(currentName); setEditingName(true); }} className="text-muted-foreground hover:text-primary">
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
               </div>
