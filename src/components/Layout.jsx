@@ -25,7 +25,15 @@ const studentNav = [
   { path: "/tutoring", icon: Calendar, label: "Tutoring" },
 ];
 
-const staffNav = [
+const tutorNav = [
+  { path: "/admin", icon: Home, label: "Overview" },
+  { path: "/admin/courses", icon: BookOpen, label: "Courses" },
+  { path: "/admin/students", icon: Users, label: "Students" },
+  { path: "/admin/reports", icon: TrendingUp, label: "Reports" },
+  { path: "/admin/sessions", icon: Calendar, label: "Sessions" },
+];
+
+const adminNav = [
   { path: "/admin", icon: Home, label: "Overview" },
   { path: "/admin/courses", icon: BookOpen, label: "Courses" },
   { path: "/admin/students", icon: Users, label: "Students" },
@@ -43,9 +51,8 @@ export default function Layout() {
 
   const isAdmin = user?.role === "admin";
   const isTutor = user?.role === "tutor" || user?.role === "assistant";
-  const isStaff = isAdmin || isTutor;
   // "student" is the default role (replaces the platform's internal "user" label)
-  const navItems = isStaff ? staffNav : studentNav;
+  const navItems = isAdmin ? adminNav : isTutor ? tutorNav : studentNav;
 
   const handleLogout = () => base44.auth.logout("/");
 
