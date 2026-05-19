@@ -26,13 +26,15 @@ export default function Settings() {
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState("");
 
-  // Sync state when user updates (only on user ID change, not on every edit state change)
+  // Sync state only on component mount
   useEffect(() => {
-    if (user) {
+    if (user && !displayName) {
       setDisplayName(user.full_name || "");
+    }
+    if (user && !avatarUrl) {
       setAvatarUrl(user.avatar_url || "");
     }
-  }, [user?.id]);
+  }, []);
 
   // Password change state
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
