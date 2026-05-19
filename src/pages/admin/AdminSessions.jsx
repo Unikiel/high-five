@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { COURSES } from "@/lib/courseData";
 import { Calendar, CheckCircle, XCircle, Clock, User } from "lucide-react";
@@ -8,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminSessions() {
+  const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -35,6 +38,10 @@ export default function AdminSessions() {
   };
 
   const filtered = filter === "all" ? sessions : sessions.filter(s => s.status === filter);
+
+  if (user && user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const getName = (email) => users.find(u => u.email === email)?.full_name || email;
 

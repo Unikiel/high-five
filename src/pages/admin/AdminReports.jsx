@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { COURSES } from "@/lib/courseData";
 import { TrendingUp, Users, Target, Award } from "lucide-react";
@@ -10,6 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ["#3B82F6", "#8B5CF6", "#EF4444", "#F97316", "#10B981", "#F59E0B", "#6366F1", "#DC2626", "#059669", "#EC4899"];
 
 export default function AdminReports() {
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [exams, setExams] = useState([]);
@@ -66,6 +69,10 @@ export default function AdminReports() {
   const passRate = filteredExams.length > 0
     ? Math.round((filteredExams.filter(e => e.score >= 70).length / filteredExams.length) * 100)
     : 0;
+
+  if (user && user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { CreditCard, Plus, Edit2, Trash2, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +18,7 @@ const DEFAULT_PLANS = [
 ];
 
 export default function AdminBilling() {
+  const { user } = useAuth();
   const [plans, setPlans] = useState([]);
   const [editingPlan, setEditingPlan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +61,10 @@ export default function AdminBilling() {
       loadPlans();
     } catch (e) {}
   };
+
+  if (user && user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const PLAN_COLORS = { weekly: "text-blue-500", monthly: "text-purple-500", yearly: "text-green-500" };
   const PLAN_BG = { weekly: "border-blue-200 dark:border-blue-800", monthly: "border-purple-200 dark:border-purple-800", yearly: "border-green-200 dark:border-green-800" };

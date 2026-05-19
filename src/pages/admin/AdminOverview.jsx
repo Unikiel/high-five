@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { Users, BookOpen, Target, Calendar, TrendingUp, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 
 export default function AdminOverview() {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [exams, setExams] = useState([]);
@@ -37,6 +39,10 @@ export default function AdminOverview() {
   const avgScore = completedExams.length > 0
     ? Math.round(completedExams.reduce((s, e) => s + (e.score || 0), 0) / completedExams.length)
     : 0;
+  if (user && user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const pendingSessions = sessions.filter(s => s.status === "pending");
 
   const stats = [
