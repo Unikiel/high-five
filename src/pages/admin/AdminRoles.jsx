@@ -45,7 +45,14 @@ const STORAGE_KEY = "hf-role-matrix";
 function loadMatrix() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : DEFAULT_MATRIX;
+    if (!saved) return DEFAULT_MATRIX;
+    const parsed = JSON.parse(saved);
+    // Merge with defaults so any missing keys are always populated
+    const merged = {};
+    for (const role of Object.keys(DEFAULT_MATRIX)) {
+      merged[role] = { ...DEFAULT_MATRIX[role], ...(parsed[role] || {}) };
+    }
+    return merged;
   } catch {
     return DEFAULT_MATRIX;
   }
