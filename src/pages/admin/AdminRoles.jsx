@@ -72,10 +72,22 @@ export default function AdminRoles() {
   const sendInvite = async () => {
     if (!inviteEmail.trim()) return;
     setInviteSending(true);
-    // inviteUser only accepts "user" or "admin" — student/tutor/assistant all use "user" as base role
+    const email = inviteEmail.trim();
+    // inviteUser only accepts "user" or "admin" as base role
     const baseRole = inviteRole === "admin" ? "admin" : "user";
-    await base44.users.inviteUser(inviteEmail.trim(), baseRole);
-    setInviteMsg({ text: `Invite sent to ${inviteEmail}!`, ok: true });
+    await base44.users.inviteUser(email, baseRole);
+
+    // After invite, reload users and if they already exist, set their custom role immediately
+    const updatedUsers = await base44.entities.User.list();
+    setAllUsers(updatedUsers);
+    const existingUser = updatedUsers.find(u => u.email === email);
+    if (existingUser && existingUser.role !== inviteRole) {
+      await base44.entities.User.update(existingUser.id, { role: inviteRole });
+      const refreshed = await base44.entities.User.list();
+      setAllUsers(refreshed);
+    }
+
+    setInviteMsg({ text: `Invite sent to ${email}!`, ok: true });
     setInviteEmail("");
     setInviteSending(false);
     setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 2500);
