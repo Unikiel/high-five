@@ -26,12 +26,15 @@ export default function Settings() {
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState("");
 
-  // Sync state on user change (login/logout)
+  const prevUserIdRef = useRef(user?.id);
+
+  // Sync state only when user ID actually changes (logout/login different user)
   useEffect(() => {
-    if (user) {
+    if (user && user.id !== prevUserIdRef.current) {
       setDisplayName(user.full_name || "");
       setAvatarUrl(user.avatar_url || "");
       setEditingName(false);
+      prevUserIdRef.current = user.id;
     }
   }, [user?.id]);
 
