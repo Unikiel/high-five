@@ -89,7 +89,7 @@ export default function Courses() {
               <div className="h-1.5 w-full" style={{ backgroundColor: course.color }} />
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl text-white shadow-sm"
+                  <div className="w-16 h-16 rounded-xl flex items-center justify-center text-4xl text-white shadow-md"
                     style={{ backgroundColor: course.color }}>
                     {course.icon}
                   </div>
