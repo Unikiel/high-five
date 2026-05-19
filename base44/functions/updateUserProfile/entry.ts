@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
 
     // Use asServiceRole to update the user with bypass restrictions
     const updatedUser = await base44.asServiceRole.entities.User.update(user.id, updateData);
-    return Response.json({ user: updatedUser });
+    return Response.json(updatedUser);
   } catch (error) {
     console.error('Update failed:', error);
     return Response.json({ error: error.message }, { status: 500 });

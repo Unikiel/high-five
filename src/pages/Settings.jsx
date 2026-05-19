@@ -46,7 +46,7 @@ export default function Settings() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const result = await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
-      setAvatarUrl(result.data?.avatar_url || file_url);
+      setAvatarUrl(result.data?.avatar_url);
     } catch (err) {
       console.error("Avatar upload failed:", err);
     } finally {
@@ -58,7 +58,8 @@ export default function Settings() {
     if (!displayName.trim()) return;
     setNameSaving(true);
     try {
-      await base44.functions.invoke('updateUserProfile', { full_name: displayName.trim() });
+      const result = await base44.functions.invoke('updateUserProfile', { full_name: displayName.trim() });
+      setDisplayName(result.data?.full_name || displayName);
       setNameMsg("Name updated!");
       setEditingName(false);
     } catch (err) {
