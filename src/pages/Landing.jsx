@@ -99,13 +99,19 @@ export default function Landing() {
         <div className="flex items-center justify-center gap-3 mt-8">
           <div className="flex -space-x-3">
             {[
-              "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face",
-              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face",
-            ].map((src, i) => (
-              <img key={i} src={src} alt="Student" className="w-9 h-9 rounded-full border-2 border-background object-cover" />
+              { initial: "A", color: "bg-blue-500" },
+              { initial: "M", color: "bg-purple-500" },
+              { initial: "J", color: "bg-emerald-500" },
+              { initial: "S", color: "bg-orange-500" },
+              { initial: "L", color: "bg-pink-500" },
+            ].map((student, i) => (
+              <div
+                key={i}
+                className={`w-9 h-9 rounded-full border-2 border-background ${student.color} flex items-center justify-center text-white text-xs font-display font-bold shadow-sm`}
+                aria-label="Student success avatar"
+              >
+                {student.initial}
+              </div>
             ))}
           </div>
           <div className="text-left">
