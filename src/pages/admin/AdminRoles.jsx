@@ -72,7 +72,9 @@ export default function AdminRoles() {
   const sendInvite = async () => {
     if (!inviteEmail.trim()) return;
     setInviteSending(true);
-    await base44.users.inviteUser(inviteEmail.trim(), inviteRole);
+    // inviteUser only accepts "user" or "admin" — custom roles (tutor, assistant) use "user" base role
+    const baseRole = inviteRole === "admin" ? "admin" : "user";
+    await base44.users.inviteUser(inviteEmail.trim(), baseRole);
     setInviteMsg({ text: `Invite sent to ${inviteEmail}!`, ok: true });
     setInviteEmail("");
     setInviteSending(false);
@@ -261,7 +263,7 @@ export default function AdminRoles() {
           <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
             <div>
               <h2 className="font-display text-lg font-bold text-foreground">Invite User</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform</p>
+              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform. After they register, set their role here.</p>
             </div>
 
             <div className="space-y-2">
