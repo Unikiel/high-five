@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
+import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import {
   Home, BookOpen, Target, TrendingUp, Calendar, 
@@ -36,32 +37,15 @@ const staffNav = [
 
 export default function Layout() {
   const { user } = useAuth();
+  const { theme, changeTheme } = useTheme();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem("hf-theme") || "system");
 
   const isAdmin = user?.role === "admin";
   const isTutor = user?.role === "tutor" || user?.role === "assistant";
   const isStaff = isAdmin || isTutor;
   // "student" is the default role (replaces the platform's internal "user" label)
   const navItems = isStaff ? staffNav : studentNav;
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
-
-  const applyTheme = (t) => {
-    const root = document.documentElement;
-    if (t === "dark") root.classList.add("dark");
-    else if (t === "light") root.classList.remove("dark");
-    else {
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) root.classList.add("dark");
-      else root.classList.remove("dark");
-    }
-    localStorage.setItem("hf-theme", t);
-  };
-
-  const handleTheme = (t) => setTheme(t);
 
   const handleLogout = () => base44.auth.logout("/");
 
@@ -129,9 +113,9 @@ export default function Layout() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 mb-1">
-              <DropdownMenuItem onClick={() => handleTheme("light")}><Sun className="w-4 h-4 mr-2" />Light Mode {theme === "light" && "✓"}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTheme("dark")}><Moon className="w-4 h-4 mr-2" />Dark Mode {theme === "dark" && "✓"}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleTheme("system")}><Monitor className="w-4 h-4 mr-2" />System {theme === "system" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeTheme("light")}><Sun className="w-4 h-4 mr-2" />Light Mode {theme === "light" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeTheme("dark")}><Moon className="w-4 h-4 mr-2" />Dark Mode {theme === "dark" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeTheme("system")}><Monitor className="w-4 h-4 mr-2" />System {theme === "system" && "✓"}</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild><Link to="/settings"><Settings className="w-4 h-4 mr-2" />Settings</Link></DropdownMenuItem>
               <DropdownMenuSeparator />

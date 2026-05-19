@@ -1,17 +1,19 @@
 import { useState, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
+import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
-import { User, Sun, Moon, Monitor, Shield, KeyRound, Pencil, Check, Camera, Loader2 } from "lucide-react";
+import { User, Shield, KeyRound, Pencil, Check, Camera, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Settings() {
   const { user } = useAuth();
-  const [theme, setTheme] = useState(localStorage.getItem("hf-theme") || "system");
+  const { theme } = useTheme();
 
   // Avatar state
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
@@ -66,17 +68,7 @@ export default function Settings() {
     setTimeout(() => setPwMsg({ text: "", ok: false }), 4000);
   };
 
-  const applyTheme = (t) => {
-    setTheme(t);
-    localStorage.setItem("hf-theme", t);
-    const root = document.documentElement;
-    if (t === "dark") root.classList.add("dark");
-    else if (t === "light") root.classList.remove("dark");
-    else {
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) root.classList.add("dark");
-      else root.classList.remove("dark");
-    }
-  };
+
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-8">
@@ -189,28 +181,11 @@ export default function Settings() {
       <Card className="border-border/50">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Sun className="w-4 h-4 text-primary" />Appearance
+            <span className="w-4 h-4 text-primary">🎨</span>Appearance
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { id: "light", label: "Light", icon: Sun },
-              { id: "dark", label: "Dark", icon: Moon },
-              { id: "system", label: "System", icon: Monitor }
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => applyTheme(id)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                  theme === id ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${theme === id ? "text-primary" : "text-muted-foreground"}`} />
-                <span className="text-sm font-medium text-foreground">{label}</span>
-              </button>
-            ))}
-          </div>
+          <ThemeSelector />
         </CardContent>
       </Card>
 
