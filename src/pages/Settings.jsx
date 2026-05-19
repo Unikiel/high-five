@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import ThemeSelector from "@/components/ThemeSelector";
 
 export default function Settings() {
-  const { user, checkUserAuth } = useAuth();
+  const { user, setUser } = useAuth();
   const { theme } = useTheme();
 
   // Always derive from context user as source of truth
@@ -39,8 +39,8 @@ export default function Settings() {
     setAvatarUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
-      await checkUserAuth({ silent: true });
+      const res = await base44.functions.invoke('updateUserProfile', { avatar_url: file_url });
+      setUser(res.data);
     } catch (err) {
       console.error("Avatar upload failed:", err);
     } finally {
@@ -53,8 +53,8 @@ export default function Settings() {
     const trimmedName = draftName.trim();
     setNameSaving(true);
     try {
-      await base44.functions.invoke('updateUserProfile', { display_name: trimmedName });
-      await checkUserAuth({ silent: true });
+      const res = await base44.functions.invoke('updateUserProfile', { display_name: trimmedName });
+      setUser(res.data);
       setNameMsg("Name updated!");
       setEditingName(false);
     } catch (err) {
