@@ -142,7 +142,6 @@ export default function Pricing() {
                 <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm uppercase" placeholder="VIP25" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">Admins create codes in Admin → Billing → Special Customer Discounts, then share the code with the customer.</p>
           </div>
         </div>
 
