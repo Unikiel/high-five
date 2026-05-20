@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
       const isExpired = special?.expires_at && new Date(special.expires_at) < new Date();
       const planMatches = special && (!special.plan_type || special.plan_type === 'any' || special.plan_type === planType);
       const emailMatches = special && (!special.customer_email || special.customer_email === String(email || '').toLowerCase());
-      if (special && !isExpired && planMatches && emailMatches) {
+      const canCombine = requestedCodes.length === 1 || special?.is_combinable !== false;
+      if (special && !isExpired && planMatches && emailMatches && canCombine) {
         combinedPercentOff += Number(special.percent_off) || 0;
         appliedDiscountCodes.push(special.code);
       }

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import BackLink from "@/components/BackLink";
+import SpecialDiscountManager from "@/components/admin/SpecialDiscountManager";
 
 const DEFAULT_PLANS = [
   { plan_name: "Weekly", plan_type: "weekly", price: 9.99, original_price: 9.99, discount_percent: 0, is_active: true, features: ["All 10 AP Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking"] },
@@ -43,13 +44,22 @@ export default function AdminBilling() {
     setLoading(false);
   };
 
+  const calculateDiscount = (price, originalPrice) => {
+    if (!originalPrice || originalPrice <= price) return 0;
+    return Math.round(((originalPrice - price) / originalPrice) * 100);
+  };
+
   const handleSave = async () => {
     if (!editingPlan) return;
+    const planToSave = {
+      ...editingPlan,
+      discount_percent: calculateDiscount(Number(editingPlan.price), Number(editingPlan.original_price))
+    };
     try {
-      if (editingPlan.id) {
-        await base44.entities.Subscription.update(editingPlan.id, editingPlan);
+      if (planToSave.id) {
+        await base44.entities.Subscription.update(planToSave.id, planToSave);
       } else {
-        await base44.entities.Subscription.create(editingPlan);
+        await base44.entities.Subscription.create(planToSave);
       }
       setEditingPlan(null);
       loadPlans();
@@ -133,6 +143,8 @@ export default function AdminBilling() {
         </div>
       )}
 
+      <SpecialDiscountManager />
+
       {/* Edit Dialog */}
       <Dialog open={!!editingPlan} onOpenChange={() => setEditingPlan(null)}>
         <DialogContent className="max-w-md">
@@ -167,7 +179,9 @@ export default function AdminBilling() {
                 </div>
                 <div>
                   <Label>Discount %</Label>
-                  <Input type="number" className="mt-1" value={editingPlan.discount_percent} onChange={e => setEditingPlan(p => ({ ...p, discount_percent: parseInt(e.target.value) || 0 }))} min="0" max="100" />
+                  <div className="mt-1 h-9 rounded-md border border-input bg-muted px-3 flex items-center text-sm font-medium">
+                    {calculateDiscount(Number(editingPlan.price), Number(editingPlan.original_price))}%
+                  </div>
                 </div>
               </div>
               <div>

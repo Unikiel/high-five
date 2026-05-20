@@ -1,0 +1,47 @@
+{
+  "name": "SpecialDiscount",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Discount code customers enter at checkout"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Optional customer email this discount is limited to"
+    },
+    "percent_off": {
+      "type": "number",
+      "description": "Discount percentage applied at checkout"
+    },
+    "plan_type": {
+      "type": "string",
+      "enum": [
+        "any",
+        "weekly",
+        "monthly",
+        "yearly"
+      ],
+      "default": "any",
+      "description": "Which plan this discount applies to"
+    },
+    "is_combinable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this discount can be combined with other special discounts"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional expiration date"
+    }
+  },
+  "required": [
+    "code",
+    "percent_off"
+  ]
+}
