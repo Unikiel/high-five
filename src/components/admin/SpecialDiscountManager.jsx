@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Tag } from "lucide-react";
+import { Plus, Trash2, Tag, Pencil, X } from "lucide-react";
 
 const EMPTY_DISCOUNT = {
   code: "",
@@ -30,6 +30,7 @@ export default function SpecialDiscountManager() {
     }
   });
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState({ text: "", ok: false });
 
   const updateForm = (updates) => {
@@ -47,6 +48,26 @@ export default function SpecialDiscountManager() {
 
   useEffect(() => { loadDiscounts(); }, []);
 
+  const resetForm = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setForm({ ...EMPTY_DISCOUNT });
+    setEditingId(null);
+  };
+
+  const startEdit = (discount) => {
+    setEditingId(discount.id);
+    setForm({
+      code: discount.code || "",
+      customer_email: discount.customer_email || "",
+      percent_off: discount.percent_off || 10,
+      plan_type: discount.plan_type || "any",
+      is_combinable: discount.is_combinable !== false,
+      is_active: discount.is_active !== false,
+      expires_at: discount.expires_at || ""
+    });
+    setMessage({ text: "Editing discount code.", ok: true });
+  };
+
   const saveDiscount = async () => {
     const code = form.code.trim().toUpperCase();
     if (!code || !form.percent_off) {
@@ -55,19 +76,22 @@ export default function SpecialDiscountManager() {
     }
     setSaving(true);
     setMessage({ text: "", ok: false });
-    await base44.entities.SpecialDiscount.create({
+    const payload = {
       ...form,
       code,
       customer_email: form.customer_email.trim().toLowerCase(),
       percent_off: Math.min(Math.max(Number(form.percent_off), 1), 100),
       is_combinable: Boolean(form.is_combinable),
-      is_active: true
-    });
-    const empty = { ...EMPTY_DISCOUNT };
-    localStorage.removeItem(DRAFT_KEY);
-    setForm(empty);
+      is_active: Boolean(form.is_active)
+    };
+    if (editingId) {
+      await base44.entities.SpecialDiscount.update(editingId, payload);
+    } else {
+      await base44.entities.SpecialDiscount.create(payload);
+    }
+    resetForm();
     await loadDiscounts();
-    setMessage({ text: `Discount code ${code} was added.`, ok: true });
+    setMessage({ text: `Discount code ${code} was ${editingId ? "updated" : "added"}.`, ok: true });
     setSaving(false);
   };
 
@@ -112,7 +136,14 @@ export default function SpecialDiscountManager() {
               <option value="yearly">Yearly</option>
             </select>
           </div>
-          <Button onClick={saveDiscount} disabled={saving} className="gap-2"><Plus className="w-4 h-4" />{saving ? "Adding..." : "Add"}</Button>
+          <div className="flex gap-2">
+            <Button onClick={saveDiscount} disabled={saving} className="gap-2">
+              <Plus className="w-4 h-4" />{saving ? "Saving..." : editingId ? "Update" : "Add"}
+            </Button>
+            {editingId && (
+              <Button variant="outline" size="icon" onClick={resetForm}><X className="w-4 h-4" /></Button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
@@ -145,6 +176,7 @@ export default function SpecialDiscountManager() {
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Switch checked={discount.is_active} onCheckedChange={() => toggleField(discount, "is_active")} /> Active
                 </label>
+                <Button variant="ghost" size="icon" onClick={() => startEdit(discount)}><Pencil className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon" onClick={() => deleteDiscount(discount)}><Trash2 className="w-4 h-4" /></Button>
               </div>
             </div>
