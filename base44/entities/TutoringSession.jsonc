@@ -18,6 +18,9 @@
     "scheduled_time": {
       "type": "string"
     },
+    "end_time": {
+      "type": "string"
+    },
     "duration_minutes": {
       "type": "number",
       "default": 60

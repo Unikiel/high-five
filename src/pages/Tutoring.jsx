@@ -30,7 +30,7 @@ export default function Tutoring() {
     course_id: "",
     scheduled_date: "",
     scheduled_time: "",
-    duration_minutes: "60",
+    end_time: "",
     notes: "",
     tutor_id: ""
   });
@@ -51,8 +51,19 @@ export default function Tutoring() {
     setLoading(false);
   };
 
+  const getDurationMinutes = (start, end) => {
+    if (!start || !end) return 0;
+    const [startHour, startMinute] = start.split(":").map(Number);
+    const [endHour, endMinute] = end.split(":").map(Number);
+    const startTotal = startHour * 60 + startMinute;
+    const endTotal = endHour * 60 + endMinute;
+    return endTotal > startTotal ? endTotal - startTotal : 0;
+  };
+
+  const durationMinutes = getDurationMinutes(form.scheduled_time, form.end_time);
+
   const handleBook = async () => {
-    if (!form.course_id || !form.scheduled_date || !form.scheduled_time) return;
+    if (!form.course_id || !form.scheduled_date || !form.scheduled_time || !form.end_time || durationMinutes <= 0) return;
     setSubmitting(true);
     try {
       await base44.entities.TutoringSession.create({
@@ -61,12 +72,13 @@ export default function Tutoring() {
         course_id: form.course_id,
         scheduled_date: form.scheduled_date,
         scheduled_time: form.scheduled_time,
-        duration_minutes: parseInt(form.duration_minutes),
+        end_time: form.end_time,
+        duration_minutes: durationMinutes,
         notes: form.notes,
         status: "pending"
       });
       setOpen(false);
-      setForm({ course_id: "", scheduled_date: "", scheduled_time: "", duration_minutes: "60", notes: "", tutor_id: "" });
+      setForm({ course_id: "", scheduled_date: "", scheduled_time: "", end_time: "", notes: "", tutor_id: "" });
       loadData();
     } catch (e) {}
     setSubmitting(false);
@@ -74,6 +86,12 @@ export default function Tutoring() {
 
   const upcoming = sessions.filter(s => s.status !== "cancelled" && s.status !== "completed" && new Date(s.scheduled_date) >= new Date());
   const past = sessions.filter(s => s.status === "completed" || new Date(s.scheduled_date) < new Date());
+  const calendarDays = Object.entries(upcoming.reduce((days, session) => {
+    const day = session.scheduled_date;
+    if (!days[day]) days[day] = [];
+    days[day].push(session);
+    return days;
+  }, {})).sort(([a], [b]) => new Date(a) - new Date(b));
 
   const SessionCard = ({ session }) => {
     const { color, icon: Icon } = STATUS_CONFIG[session.status] || STATUS_CONFIG.pending;
@@ -94,7 +112,7 @@ export default function Tutoring() {
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(session.scheduled_date).toLocaleDateString()}</span>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.scheduled_time} ({session.duration_minutes} min)</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""} ({session.duration_minutes} min)</span>
               {session.tutor_id && session.tutor_id !== "pending" && (
                 <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === session.tutor_id); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
               )}
@@ -140,20 +158,21 @@ export default function Tutoring() {
                   <Input type="date" className="mt-1" value={form.scheduled_date} onChange={e => setForm(f => ({ ...f, scheduled_date: e.target.value }))} min={new Date().toISOString().split("T")[0]} />
                 </div>
                 <div>
-                  <Label>Time *</Label>
+                  <Label>Start Time *</Label>
                   <Input type="time" className="mt-1" value={form.scheduled_time} onChange={e => setForm(f => ({ ...f, scheduled_time: e.target.value }))} />
                 </div>
               </div>
-              <div>
-                <Label>Duration</Label>
-                <Select value={form.duration_minutes} onValueChange={v => setForm(f => ({ ...f, duration_minutes: v }))}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">60 minutes</SelectItem>
-                    <SelectItem value="90">90 minutes</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>End Time *</Label>
+                  <Input type="time" className="mt-1" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Duration</Label>
+                  <div className="mt-1 h-9 rounded-md border border-input bg-muted px-3 flex items-center text-sm">
+                    {durationMinutes > 0 ? `${durationMinutes} minutes` : "Set start and end"}
+                  </div>
+                </div>
               </div>
               {tutors.length > 0 && (
                 <div>
@@ -170,13 +189,41 @@ export default function Tutoring() {
                 <Label>Topics / Notes</Label>
                 <Textarea className="mt-1" placeholder="Topics you'd like to cover, questions, etc." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
-              <Button className="w-full" onClick={handleBook} disabled={submitting || !form.course_id || !form.scheduled_date || !form.scheduled_time}>
+              <Button className="w-full" onClick={handleBook} disabled={submitting || !form.course_id || !form.scheduled_date || !form.scheduled_time || !form.end_time || durationMinutes <= 0}>
                 {submitting ? "Booking..." : "Book Session"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+
+      {calendarDays.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="font-display text-xl font-semibold text-foreground">Session Calendar</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {calendarDays.map(([date, daySessions]) => (
+              <Card key={date} className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />{new Date(date).toLocaleDateString()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {daySessions.map(session => {
+                    const course = COURSES.find(c => c.code === session.course_id);
+                    return (
+                      <div key={session.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
+                        <div className="font-medium text-foreground">{course?.name || session.course_id}</div>
+                        <div className="text-muted-foreground">{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""} · {session.duration_minutes} min</div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Upcoming */}
       <div className="space-y-4">

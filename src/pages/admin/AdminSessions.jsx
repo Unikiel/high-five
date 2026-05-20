@@ -40,6 +40,12 @@ export default function AdminSessions() {
   };
 
   const filtered = filter === "all" ? sessions : sessions.filter(s => s.status === filter);
+  const calendarDays = Object.entries(filtered.reduce((days, session) => {
+    const day = session.scheduled_date;
+    if (!days[day]) days[day] = [];
+    days[day].push(session);
+    return days;
+  }, {})).sort(([a], [b]) => new Date(a) - new Date(b));
 
   if (user && user.role !== "admin") {
     return <Navigate to="/dashboard" replace />;
@@ -77,6 +83,35 @@ export default function AdminSessions() {
         </Select>
       </div>
 
+      {!loading && calendarDays.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="font-display text-xl font-semibold text-foreground">Session Calendar</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {calendarDays.map(([date, daySessions]) => (
+              <Card key={date} className="border-border/50">
+                <CardContent className="p-4">
+                  <div className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />{new Date(date).toLocaleDateString()}
+                  </div>
+                  <div className="space-y-2">
+                    {daySessions.map(session => {
+                      const course = COURSES.find(c => c.code === session.course_id);
+                      return (
+                        <div key={session.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
+                          <div className="font-medium text-foreground">{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""}</div>
+                          <div className="text-muted-foreground truncate">{course?.name || session.course_id}</div>
+                          <div className="text-xs text-muted-foreground truncate">{getName(session.student_id)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-28 bg-muted animate-pulse rounded-xl" />)}</div>
       ) : filtered.length === 0 ? (
@@ -105,7 +140,7 @@ export default function AdminSessions() {
                           <div className="flex flex-wrap gap-4 mt-1.5 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Student: {getName(s.student_id)}</span>
                             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{new Date(s.scheduled_date).toLocaleDateString()}</span>
-                            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{s.scheduled_time} ({s.duration_minutes} min)</span>
+                            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{s.scheduled_time}{s.end_time ? ` - ${s.end_time}` : ""} ({s.duration_minutes} min)</span>
                           </div>
                           {s.notes && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{s.notes}</p>}
                         </div>
