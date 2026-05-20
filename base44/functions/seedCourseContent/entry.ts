@@ -29,7 +29,8 @@ const optionSets = [
 ];
 
 function buildLesson(courseId, unitTitle, topicTitle) {
-  return `${topicTitle} develops the essential ideas from ${unitTitle}. Students should connect definitions, representations, procedures, and contextual meaning rather than memorize isolated facts.\n\nFocus on identifying what is given, choosing an appropriate model, carrying out the calculation or reasoning clearly, and checking that the result makes sense in the context. Strong AP responses include setup, justification, and interpretation.\n\nWorked Example 1: A problem asks you to apply ${topicTitle.toLowerCase()} in a new context. First identify the relevant concept from ${unitTitle}, write the governing relationship, substitute known quantities, and simplify carefully. The final sentence should explain what the answer means.\n\nWorked Example 2: When a graph, table, code segment, experiment, or scenario is provided, translate it into the correct representation before solving. Use labels, units, and assumptions to avoid common AP distractors.`;
+  const subject = courseId.replace('AP_', 'AP ').replaceAll('_', ' ');
+  return `${topicTitle} introduces the core ideas you need for ${subject}. Start by identifying the main concept in ${unitTitle}, then connect it to the representation in the problem: equation, graph, table, diagram, code, or written scenario.\n\nFocus on what the question is asking, what information is given, and which AP skill is being tested. Strong answers show the setup, use the correct vocabulary, and explain the meaning of the result in context.\n\nAs you study, compare multiple representations of the same idea and watch for common distractors such as missing units, unsupported assumptions, sign errors, or answers that do not match the situation.`;
 }
 
 function buildTopic(unit, index) {
@@ -106,6 +107,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const maxUnits = Number(body.maxUnits || 6);
+    const refreshTopics = body.refreshTopics === true;
 
     const units = await base44.asServiceRole.entities.Unit.list('course_id', 1000);
     const existingTopics = await base44.asServiceRole.entities.Topic.list('created_date', 1000);
@@ -121,6 +123,29 @@ Deno.serve(async (req) => {
 
     if (topicsToCreate.length > 0) {
       await createChunks(base44.asServiceRole.entities.Topic, topicsToCreate, 50);
+    }
+
+    let topicsUpdated = 0;
+    if (refreshTopics) {
+      const unitsById = units.reduce((acc, unit) => {
+        acc[unit.id] = unit;
+        return acc;
+      }, {});
+      for (const topic of existingTopics) {
+        const unit = unitsById[topic.unit_id];
+        if (!unit) continue;
+        const index = Number(String(topic.topic_number || '').split('.').pop()) || topic.order || 1;
+        const refreshed = buildTopic(unit, Math.min(Math.max(index, 1), 5));
+        await base44.asServiceRole.entities.Topic.update(topic.id, {
+          description: refreshed.description,
+          key_concepts: refreshed.key_concepts,
+          latex_formulas: refreshed.latex_formulas,
+          lesson_content: refreshed.lesson_content,
+          cheatsheet: refreshed.cheatsheet,
+          worked_examples: refreshed.worked_examples
+        });
+        topicsUpdated += 1;
+      }
     }
 
     const allTopics = await base44.asServiceRole.entities.Topic.list('created_date', 1000);
@@ -162,6 +187,7 @@ Deno.serve(async (req) => {
       units_processed_for_questions: unitsNeedingQuestions.length,
       remaining_units_below_100_questions: remainingAfterBatch,
       topics_created: topicsToCreate.length,
+      topics_updated: topicsUpdated,
       questions_created: questionsToCreate.length
     });
   } catch (error) {

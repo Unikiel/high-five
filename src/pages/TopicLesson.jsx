@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { ChevronLeft, CheckCircle, BookOpen, FileText, Lightbulb } from "lucide-react";
+import { BlockMath } from "react-katex";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +99,11 @@ export default function TopicLesson() {
   if (!topic) return <div className="p-6 text-center text-muted-foreground">Topic not found</div>;
 
   const isCompleted = progress?.status === "completed";
+  const cleanLessonText = (text) => String(text || "")
+    .split("\n\n")
+    .filter((paragraph) => !paragraph.trim().startsWith("Worked Example"))
+    .join("\n\n");
+  const cleanFormula = (formula) => String(formula || "").replace(/^\$|\$$/g, "");
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -150,12 +156,12 @@ export default function TopicLesson() {
         <div className="space-y-8">
           <Card className="border-0 shadow-sm bg-card rounded-2xl">
             <CardContent className="p-6 sm:p-8">
-              <div className="text-foreground leading-7 whitespace-pre-wrap text-base">{content.explanation}</div>
+              <div className="text-foreground leading-7 whitespace-pre-wrap text-base">{cleanLessonText(content.explanation)}</div>
               {content.formulas?.length > 0 && (
                 <div className="mt-8 space-y-4">
                   {content.formulas.map((formula, index) => (
-                    <div key={index} className="rounded-xl bg-muted/40 px-5 py-4 text-center font-mono text-sm sm:text-base text-foreground">
-                      {formula}
+                    <div key={index} className="rounded-xl bg-muted/40 px-5 py-4 text-center text-foreground overflow-x-auto">
+                      <BlockMath math={cleanFormula(formula)} />
                     </div>
                   ))}
                 </div>
