@@ -109,13 +109,7 @@ Deno.serve(async (req) => {
 
     const units = await base44.asServiceRole.entities.Unit.list('course_id', 1000);
     const existingTopics = await base44.asServiceRole.entities.Topic.list('created_date', 1000);
-    const existingQuestions = await base44.asServiceRole.entities.Question.list('created_date', 10000);
-
     const topicKeys = new Set(existingTopics.map((t) => `${t.unit_id}:${t.topic_number}`));
-    const questionUnitCounts = existingQuestions.reduce((acc, q) => {
-      acc[q.unit_id] = (acc[q.unit_id] || 0) + 1;
-      return acc;
-    }, {});
 
     const topicsToCreate = [];
     for (const unit of units) {
@@ -137,12 +131,20 @@ Deno.serve(async (req) => {
     }, {});
 
     const questionsToCreate = [];
-    const unitsNeedingQuestions = units
-      .filter((unit) => (questionUnitCounts[unit.id] || 0) < 100)
-      .slice(0, maxUnits);
+    const unitsNeedingQuestions = [];
+    let remainingAfterBatch = 0;
 
-    for (const unit of unitsNeedingQuestions) {
-      const currentCount = questionUnitCounts[unit.id] || 0;
+    for (const unit of units) {
+      const existingForUnit = await base44.asServiceRole.entities.Question.filter({ unit_id: unit.id }, 'created_date', 150);
+      const currentCount = existingForUnit.length;
+      if (currentCount >= 100) continue;
+
+      if (unitsNeedingQuestions.length >= maxUnits) {
+        remainingAfterBatch += 1;
+        continue;
+      }
+
+      unitsNeedingQuestions.push(unit);
       const needed = Math.max(0, 100 - currentCount);
       const unitTopics = (topicsByUnit[unit.id] || []).sort((a, b) => a.order - b.order);
       for (let i = 1; i <= needed; i++) {
@@ -158,7 +160,7 @@ Deno.serve(async (req) => {
     return Response.json({
       units: units.length,
       units_processed_for_questions: unitsNeedingQuestions.length,
-      remaining_units_below_100_questions: Math.max(0, units.filter((unit) => (questionUnitCounts[unit.id] || 0) < 100).length - unitsNeedingQuestions.length),
+      remaining_units_below_100_questions: remainingAfterBatch,
       topics_created: topicsToCreate.length,
       questions_created: questionsToCreate.length
     });
