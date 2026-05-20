@@ -16,6 +16,27 @@
         "yearly"
       ]
     },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "manual",
+        "venmo",
+        "zelle",
+        "paypal",
+        "cashapp",
+        "wechat",
+        "alipay",
+        "other"
+      ],
+      "default": "stripe"
+    },
+    "payment_handle": {
+      "type": "string"
+    },
+    "payment_note": {
+      "type": "string"
+    },
     "stripe_session_id": {
       "type": "string"
     },

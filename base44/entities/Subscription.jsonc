@@ -33,6 +33,29 @@
       "type": "boolean",
       "default": true
     },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "manual",
+        "venmo",
+        "zelle",
+        "paypal",
+        "cashapp",
+        "wechat",
+        "alipay",
+        "other"
+      ],
+      "default": "stripe"
+    },
+    "payment_handle": {
+      "type": "string",
+      "description": "Payment username, email, ID, or short note shown to students"
+    },
+    "payment_instructions": {
+      "type": "string",
+      "description": "Manual payment instructions shown to students"
+    },
     "stripe_price_id": {
       "type": "string"
     }

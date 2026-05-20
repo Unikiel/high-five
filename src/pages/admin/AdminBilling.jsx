@@ -88,7 +88,7 @@ export default function AdminBilling() {
           <h1 className="font-display text-3xl font-bold text-foreground">Subscription Plans</h1>
           <p className="text-muted-foreground mt-1">Manage pricing plans and discounts</p>
         </div>
-        <Button onClick={() => setEditingPlan({ plan_name: "", plan_type: "monthly", price: 0, original_price: 0, discount_percent: 0, is_active: true, features: [] })} className="gap-2">
+        <Button onClick={() => setEditingPlan({ plan_name: "", plan_type: "monthly", price: 0, original_price: 0, discount_percent: 0, is_active: true, payment_method: "stripe", payment_handle: "", payment_instructions: "", features: [] })} className="gap-2">
           <Plus className="w-4 h-4" />Add Plan
         </Button>
       </div>
@@ -104,6 +104,7 @@ export default function AdminBilling() {
                   <div>
                     <h3 className={`font-display text-xl font-bold ${PLAN_COLORS[plan.plan_type] || "text-foreground"}`}>{plan.plan_name}</h3>
                     <p className="text-sm text-muted-foreground capitalize">{plan.plan_type}</p>
+                    <Badge variant="outline" className="mt-2 capitalize">{plan.payment_method || "stripe"}</Badge>
                   </div>
                   <Switch checked={plan.is_active} onCheckedChange={() => toggleActive(plan)} />
                 </div>
@@ -183,6 +184,30 @@ export default function AdminBilling() {
                     {calculateDiscount(Number(editingPlan.price), Number(editingPlan.original_price))}%
                   </div>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Payment Method</Label>
+                  <select className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm" value={editingPlan.payment_method || "stripe"} onChange={e => setEditingPlan(p => ({ ...p, payment_method: e.target.value }))}>
+                    <option value="stripe">Stripe</option>
+                    <option value="manual">Manual</option>
+                    <option value="venmo">Venmo</option>
+                    <option value="zelle">Zelle</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="cashapp">Cash App</option>
+                    <option value="wechat">WeChat Pay</option>
+                    <option value="alipay">Alipay</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Payment Handle</Label>
+                  <Input className="mt-1" placeholder="ID, email, or note" value={editingPlan.payment_handle || ""} onChange={e => setEditingPlan(p => ({ ...p, payment_handle: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <Label>Payment Instructions</Label>
+                <textarea className="mt-1 w-full min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" placeholder="Show students how to pay, including QR code URL if needed" value={editingPlan.payment_instructions || ""} onChange={e => setEditingPlan(p => ({ ...p, payment_instructions: e.target.value }))} />
               </div>
               <div>
                 <Label>Features (one per line)</Label>

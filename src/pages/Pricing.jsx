@@ -5,6 +5,7 @@ import { CheckCircle, Tag, Zap, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
 
@@ -14,6 +15,8 @@ export default function Pricing() {
   const [checkoutPlanId, setCheckoutPlanId] = useState(null);
   const [discountCode, setDiscountCode] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [manualPlan, setManualPlan] = useState(null);
+  const [manualSubmitted, setManualSubmitted] = useState(false);
   const checkoutStatus = new URLSearchParams(window.location.search).get("checkout");
 
   useEffect(() => {
@@ -33,6 +36,12 @@ export default function Pricing() {
   };
 
   const handleCheckout = async (plan) => {
+    if ((plan.payment_method || "stripe") !== "stripe") {
+      setManualPlan(plan);
+      setManualSubmitted(false);
+      return;
+    }
+
     if (window.self !== window.top) {
       alert("Checkout works only from the published app. Please publish and open the app in a new tab to test payments.");
       return;
@@ -47,6 +56,20 @@ export default function Pricing() {
       email: customerEmail.trim().toLowerCase()
     });
     window.location.href = response.data.url;
+  };
+
+  const submitManualPayment = async () => {
+    if (!manualPlan || !customerEmail.trim()) return;
+    await base44.functions.invoke("createManualPayment", {
+      planId: manualPlan.id,
+      planType: manualPlan.plan_type,
+      email: customerEmail.trim().toLowerCase(),
+      amount: manualPlan.price,
+      paymentMethod: manualPlan.payment_method || "manual",
+      paymentHandle: manualPlan.payment_handle || "",
+      paymentNote: manualPlan.payment_instructions || ""
+    });
+    setManualSubmitted(true);
   };
 
   return (
@@ -141,10 +164,10 @@ export default function Pricing() {
                     </ul>
                     <Button
                       className={`w-full ${style.cta}`}
-                      disabled={!plan.stripe_price_id || checkoutPlanId === plan.id}
+                      disabled={((plan.payment_method || "stripe") === "stripe" && !plan.stripe_price_id) || checkoutPlanId === plan.id}
                       onClick={() => handleCheckout(plan)}
                     >
-                      {checkoutPlanId === plan.id ? "Opening checkout..." : "Start 7-day trial"}
+                      {checkoutPlanId === plan.id ? "Opening checkout..." : (plan.payment_method || "stripe") === "stripe" ? "Start 7-day trial" : "Subscribe"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -157,6 +180,35 @@ export default function Pricing() {
           All plans include a 7-day free trial. Cancel anytime.
         </p>
       </div>
+
+      <Dialog open={!!manualPlan} onOpenChange={() => setManualPlan(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{manualPlan?.plan_name} Payment Instructions</DialogTitle>
+          </DialogHeader>
+          {manualPlan && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+                <p className="text-sm"><span className="font-medium">Payment method:</span> <span className="capitalize">{manualPlan.payment_method || "manual"}</span></p>
+                {manualPlan.payment_handle && <p className="text-sm"><span className="font-medium">Payment handle:</span> {manualPlan.payment_handle}</p>}
+                {manualPlan.payment_instructions && <p className="text-sm whitespace-pre-wrap">{manualPlan.payment_instructions}</p>}
+              </div>
+              {!manualSubmitted ? (
+                <>
+                  {!customerEmail.trim() && <p className="text-sm text-destructive">Please enter your email above before submitting.</p>}
+                  <Button className="w-full" onClick={submitManualPayment} disabled={!customerEmail.trim()}>
+                    I sent the payment
+                  </Button>
+                </>
+              ) : (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+                  Payment request submitted. Your subscription will be activated after admin confirmation.
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
