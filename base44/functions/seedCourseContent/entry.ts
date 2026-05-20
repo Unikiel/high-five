@@ -73,52 +73,24 @@ Deno.serve(async (req) => {
     }
 
     const courses = expandedCourses();
-    const courseCodes = new Set(courses.map((course) => course.code));
-
-    const existingCourses = await listAll(base44.asServiceRole.entities.Course);
-    for (let index = 0; index < courses.length; index += 1) {
-      const course = courses[index];
-      const existing = existingCourses.find((item) => item.code === course.code);
-      const payload = {
-        code: course.code,
-        name: course.name,
-        color: course.color,
-        icon: course.icon,
-        description: course.description,
-        is_active: true,
-        order: index + 1
-      };
-      if (existing) await base44.asServiceRole.entities.Course.update(existing.id, payload);
-      else await base44.asServiceRole.entities.Course.create(payload);
-    }
-
-    let unitsCreated = 0;
-    let topicsCreated = 0;
+    const units = await listAll(base44.asServiceRole.entities.Unit);
+    const unitMap = new Map(units.map((unit) => [`${unit.course_id}:${unit.unit_number}`, unit]));
+    const topicRecords = [];
 
     for (const course of courses) {
       for (const unit of course.units) {
-        const [unitNumber, title, weight, topics] = unit;
-        const parsedWeight = parseWeight(weight);
-        const unitRecord = await base44.asServiceRole.entities.Unit.create({
-          course_id: course.code,
-          title,
-          unit_number: unitNumber,
-          description: `${course.name}: ${title}`,
-          exam_weight_min: parsedWeight.min,
-          exam_weight_max: parsedWeight.max,
-          order: unitNumber
-        });
-        unitsCreated += 1;
-
-        const topicRecords = topics.map((topicTitle, topicIndex) => buildTopic(course, unitRecord, topicTitle, topicIndex + 1));
-        for (let i = 0; i < topicRecords.length; i += 50) {
-          await base44.asServiceRole.entities.Topic.bulkCreate(topicRecords.slice(i, i + 50));
-        }
-        topicsCreated += topicRecords.length;
+        const [unitNumber, , , topics] = unit;
+        const unitRecord = unitMap.get(`${course.code}:${unitNumber}`);
+        if (!unitRecord) continue;
+        topicRecords.push(...topics.map((topicTitle, topicIndex) => buildTopic(course, unitRecord, topicTitle, topicIndex + 1)));
       }
     }
 
-    return Response.json({ courses: courses.length, units_created: unitsCreated, topics_created: topicsCreated });
+    for (let i = 0; i < topicRecords.length; i += 100) {
+      await base44.asServiceRole.entities.Topic.bulkCreate(topicRecords.slice(i, i + 100));
+    }
+
+    return Response.json({ courses: courses.length, topics_created: topicRecords.length });
   } catch (error) {
     console.error('seedCourseContent error', error);
     return Response.json({ error: error.message }, { status: 500 });
