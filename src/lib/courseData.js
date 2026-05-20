@@ -149,7 +149,14 @@ export const COURSES = [
 ];
 
 COURSES.find((course) => course.code === "AP_CALC_BC").units = [
-  ...COURSES.find((course) => course.code === "AP_CALC_AB").units,
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[0], weight: "4-7%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[1], weight: "4-7%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[2], weight: "4-7%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[3], weight: "6-9%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[4], weight: "8-11%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[5], weight: "17-20%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[6], weight: "6-9%" },
+  { ...COURSES.find((course) => course.code === "AP_CALC_AB").units[7], weight: "6-9%" },
   { number: 9, title: "Parametric Equations, Polar Coordinates, and Vector-Valued Functions", weight: "11-12%", topics: ["Defining and Differentiating Parametric Equations", "Second Derivatives of Parametric Equations", "Finding Arc Lengths of Curves Given by Parametric Equations", "Defining and Differentiating Vector-Valued Functions", "Integrating Vector-Valued Functions", "Solving Motion Problems Using Parametric and Vector-Valued Functions", "Defining Polar Coordinates and Differentiating in Polar Form", "Finding Areas of Polar Regions", "Finding Arc Lengths of Polar Curves"] },
   { number: 10, title: "Infinite Sequences and Series", weight: "17-18%", topics: ["Defining Convergent and Divergent Infinite Series", "Working with Geometric Series", "The nth Term Test", "Integral Test", "Harmonic Series and p-Series", "Comparison Tests", "Alternating Series Test", "Ratio Test", "Determining Absolute or Conditional Convergence", "Alternating Series Error Bound", "Finding Taylor Polynomial Approximations", "Lagrange Error Bound", "Radius and Interval of Convergence", "Representing Functions as Power Series", "Maclaurin Series for Common Functions", "Taylor Series"] }
 ];
