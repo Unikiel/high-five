@@ -26,6 +26,14 @@ export default function TopicLesson() {
       const topics = await base44.entities.Topic.filter({ id: topicId });
       if (topics.length > 0) {
         setTopic(topics[0]);
+        if (topics[0].lesson_content || topics[0].cheatsheet || topics[0].worked_examples?.length) {
+          setContent({
+            explanation: topics[0].lesson_content || topics[0].description,
+            formulas: topics[0].latex_formulas || [],
+            cheatsheet: topics[0].cheatsheet ? topics[0].cheatsheet.split("\n") : topics[0].key_concepts || [],
+            examples: topics[0].worked_examples || []
+          });
+        }
         const units = await base44.entities.Unit.filter({ id: topics[0].unit_id });
         if (units.length > 0) setUnit(units[0]);
       }

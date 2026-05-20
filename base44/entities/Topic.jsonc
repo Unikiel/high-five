@@ -35,6 +35,20 @@
     "cheatsheet": {
       "type": "string"
     },
+    "worked_examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "problem": {
+            "type": "string"
+          },
+          "solution": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "order": {
       "type": "number"
     }

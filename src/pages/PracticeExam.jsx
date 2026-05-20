@@ -74,8 +74,20 @@ export default function PracticeExam() {
       const e = await base44.entities.Exam.filter({ id: examId });
       if (e.length > 0) {
         setExam(e[0]);
-        const qs = generateSampleQuestions(e[0].total_questions || 10, e[0].course_id);
-        setQuestions(qs);
+        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 500);
+        const filteredBank = e[0].unit_id ? questionBank.filter(q => q.unit_id === e[0].unit_id) : questionBank;
+        const selectedQuestions = filteredBank
+          .slice(0, e[0].total_questions || 10)
+          .map((q, index) => ({
+            id: q.id,
+            q: q.question_text,
+            opts: q.options || [],
+            ans: q.correct_answer,
+            exp: q.explanation,
+            answered: null,
+            number: index + 1
+          }));
+        setQuestions(selectedQuestions);
         const mins = e[0].total_questions <= 10 ? 15 : e[0].total_questions <= 20 ? 30 : 90;
         setTimeLeft(mins * 60);
         setAnswers(e[0].answers || {});
@@ -115,8 +127,19 @@ export default function PracticeExam() {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  if (!exam || questions.length === 0) {
+  if (!exam) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto text-center space-y-4">
+        <AlertCircle className="w-10 h-10 text-muted-foreground mx-auto" />
+        <h2 className="font-display text-2xl font-bold text-foreground">No questions available yet</h2>
+        <p className="text-muted-foreground">The question bank is still being prepared for this course or unit.</p>
+        <Button onClick={() => navigate("/practice")}>Back to Practice</Button>
+      </div>
+    );
   }
 
   if (submitted) {

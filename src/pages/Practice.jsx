@@ -55,9 +55,15 @@ export default function Practice() {
     setStarting(true);
     try {
       const examType = EXAM_TYPES.find(t => t.id === selectedType);
+      let unitId;
+      if (selectedUnit !== "all") {
+        const matchingUnits = await base44.entities.Unit.filter({ course_id: selectedCourse, unit_number: Number(selectedUnit) });
+        unitId = matchingUnits[0]?.id;
+      }
       const exam = await base44.entities.Exam.create({
         student_id: user?.email,
         course_id: selectedCourse,
+        unit_id: unitId,
         title: `${course?.name} - ${examType?.label}`,
         type: selectedType === "adaptive" ? "practice" : selectedType === "quick" ? "practice" : "unit",
         status: "in_progress",

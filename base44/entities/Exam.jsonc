@@ -5,6 +5,9 @@
     "course_id": {
       "type": "string"
     },
+    "unit_id": {
+      "type": "string"
+    },
     "student_id": {
       "type": "string"
     },

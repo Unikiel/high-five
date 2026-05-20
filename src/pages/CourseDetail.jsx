@@ -21,7 +21,14 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (course) loadData();
+    if (!course) return;
+    loadData();
+    const unsubscribeTopics = base44.entities.Topic.subscribe(() => loadData());
+    const unsubscribeUnits = base44.entities.Unit.subscribe(() => loadData());
+    return () => {
+      unsubscribeTopics();
+      unsubscribeUnits();
+    };
   }, [courseCode]);
 
   const loadData = async () => {
