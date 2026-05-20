@@ -92,14 +92,6 @@ Deno.serve(async (req) => {
       else await base44.asServiceRole.entities.Course.create(payload);
     }
 
-    const allQuestions = await listAll(base44.asServiceRole.entities.Question);
-    const allTopics = await listAll(base44.asServiceRole.entities.Topic);
-    const allUnits = await listAll(base44.asServiceRole.entities.Unit);
-
-    await deleteRecords(base44.asServiceRole.entities.Question, allQuestions.filter((item) => courseCodes.has(item.course_id)));
-    await deleteRecords(base44.asServiceRole.entities.Topic, allTopics.filter((item) => courseCodes.has(item.course_id)));
-    await deleteRecords(base44.asServiceRole.entities.Unit, allUnits.filter((item) => courseCodes.has(item.course_id)));
-
     let unitsCreated = 0;
     let topicsCreated = 0;
 
