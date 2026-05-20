@@ -18,9 +18,27 @@ const EMPTY_DISCOUNT = {
   expires_at: ""
 };
 
+const DRAFT_KEY = "hf-special-discount-draft";
+
 export default function SpecialDiscountManager() {
   const [discounts, setDiscounts] = useState([]);
-  const [form, setForm] = useState(EMPTY_DISCOUNT);
+  const [form, setForm] = useState(() => {
+    try {
+      return { ...EMPTY_DISCOUNT, ...(JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}) };
+    } catch {
+      return { ...EMPTY_DISCOUNT };
+    }
+  });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ text: "", ok: false });
+
+  const updateForm = (updates) => {
+    setForm(prev => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const loadDiscounts = async () => {
     const data = await base44.entities.SpecialDiscount.list("-created_date", 50);
@@ -30,15 +48,27 @@ export default function SpecialDiscountManager() {
   useEffect(() => { loadDiscounts(); }, []);
 
   const saveDiscount = async () => {
-    if (!form.code || !form.percent_off) return;
+    const code = form.code.trim().toUpperCase();
+    if (!code || !form.percent_off) {
+      setMessage({ text: "Please enter a discount code and percentage.", ok: false });
+      return;
+    }
+    setSaving(true);
+    setMessage({ text: "", ok: false });
     await base44.entities.SpecialDiscount.create({
       ...form,
-      code: form.code.trim().toUpperCase(),
+      code,
       customer_email: form.customer_email.trim().toLowerCase(),
-      percent_off: Math.min(Math.max(Number(form.percent_off), 1), 100)
+      percent_off: Math.min(Math.max(Number(form.percent_off), 1), 100),
+      is_combinable: Boolean(form.is_combinable),
+      is_active: true
     });
-    setForm(EMPTY_DISCOUNT);
-    loadDiscounts();
+    const empty = { ...EMPTY_DISCOUNT };
+    localStorage.removeItem(DRAFT_KEY);
+    setForm(empty);
+    await loadDiscounts();
+    setMessage({ text: `Discount code ${code} was added.`, ok: true });
+    setSaving(false);
   };
 
   const toggleField = async (discount, field) => {
@@ -63,32 +93,36 @@ export default function SpecialDiscountManager() {
         <div className="grid md:grid-cols-6 gap-3 items-end">
           <div>
             <Label>Code</Label>
-            <Input className="mt-1" placeholder="VIP25" value={form.code} onChange={(e) => setForm(p => ({ ...p, code: e.target.value }))} />
+            <Input className="mt-1" placeholder="VIP25" value={form.code} onChange={(e) => updateForm({ code: e.target.value })} />
           </div>
           <div className="md:col-span-2">
             <Label>Customer Email</Label>
-            <Input className="mt-1" placeholder="Optional" value={form.customer_email} onChange={(e) => setForm(p => ({ ...p, customer_email: e.target.value }))} />
+            <Input className="mt-1" placeholder="Optional" value={form.customer_email} onChange={(e) => updateForm({ customer_email: e.target.value })} />
           </div>
           <div>
             <Label>Discount %</Label>
-            <Input type="number" className="mt-1" min="1" max="100" value={form.percent_off} onChange={(e) => setForm(p => ({ ...p, percent_off: e.target.value }))} />
+            <Input type="number" className="mt-1" min="1" max="100" value={form.percent_off} onChange={(e) => updateForm({ percent_off: e.target.value })} />
           </div>
           <div>
             <Label>Plan</Label>
-            <select className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm" value={form.plan_type} onChange={(e) => setForm(p => ({ ...p, plan_type: e.target.value }))}>
+            <select className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm" value={form.plan_type} onChange={(e) => updateForm({ plan_type: e.target.value })}>
               <option value="any">Any</option>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly</option>
             </select>
           </div>
-          <Button onClick={saveDiscount} className="gap-2"><Plus className="w-4 h-4" />Add</Button>
+          <Button onClick={saveDiscount} disabled={saving} className="gap-2"><Plus className="w-4 h-4" />{saving ? "Adding..." : "Add"}</Button>
         </div>
 
         <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-          <Switch checked={form.is_combinable} onCheckedChange={(checked) => setForm(p => ({ ...p, is_combinable: checked }))} />
+          <Switch checked={form.is_combinable} onCheckedChange={(checked) => updateForm({ is_combinable: checked })} />
           <span className="text-sm text-muted-foreground">New discounts are combinable with other special discounts</span>
         </div>
+
+        {message.text && (
+          <p className={`text-sm font-medium ${message.ok ? "text-green-500" : "text-red-500"}`}>{message.text}</p>
+        )}
 
         <div className="space-y-2">
           {discounts.map((discount) => (
