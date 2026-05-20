@@ -12,6 +12,8 @@ export default function Pricing() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkoutPlanId, setCheckoutPlanId] = useState(null);
+  const [discountCode, setDiscountCode] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const checkoutStatus = new URLSearchParams(window.location.search).get("checkout");
 
   useEffect(() => {
@@ -40,7 +42,9 @@ export default function Pricing() {
     const response = await base44.functions.invoke("createCheckoutSession", {
       priceId: plan.stripe_price_id,
       planId: plan.id,
-      planType: plan.plan_type
+      planType: plan.plan_type,
+      discountCode: discountCode.trim().toUpperCase(),
+      email: customerEmail.trim().toLowerCase()
     });
     window.location.href = response.data.url;
   };
@@ -81,6 +85,20 @@ export default function Pricing() {
             Checkout was cancelled. You can choose a plan whenever you're ready.
           </div>
         )}
+
+        <div className="mb-8 rounded-2xl border bg-card p-5 max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium text-foreground">Email for special discount</label>
+              <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="you@email.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Discount codes</label>
+              <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm uppercase" placeholder="VIP25, FRIEND10" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">Enter multiple codes separated by commas; valid discounts stack with the plan offer at checkout.</p>
+        </div>
 
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
