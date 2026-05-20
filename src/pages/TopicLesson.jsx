@@ -3,11 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { ChevronLeft, CheckCircle, BookOpen, FileText, Lightbulb } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BackLink from "@/components/BackLink";
+import WorkedExampleCard from "@/components/lesson/WorkedExampleCard";
 
 export default function TopicLesson() {
   const { courseCode, topicId } = useParams();
@@ -111,119 +112,104 @@ export default function TopicLesson() {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground font-medium">{topic.topic_number}</p>
-          <h1 className="font-display text-3xl font-bold text-foreground mt-1">{topic.title}</h1>
-        </div>
-        <div className="flex gap-2 flex-shrink-0">
-          {isCompleted ? (
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400 border-0 gap-1.5">
+      <div>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">{topic.title}</h1>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Badge className="bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300 border-0 rounded-full px-3 py-1">Foundational</Badge>
+          {isCompleted && (
+            <Badge className="bg-primary/10 text-primary border-0 rounded-full px-3 py-1 gap-1.5">
               <CheckCircle className="w-3.5 h-3.5" />Completed
             </Badge>
-          ) : (
-            <Button onClick={markComplete} size="sm" variant="outline" className="gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5" />Mark Complete
-            </Button>
           )}
         </div>
       </div>
 
-      {/* Content Tabs */}
-      <Tabs defaultValue="lesson">
-        <TabsList>
-          <TabsTrigger value="lesson" className="gap-2"><BookOpen className="w-4 h-4" />Lesson</TabsTrigger>
-          <TabsTrigger value="cheatsheet" className="gap-2"><FileText className="w-4 h-4" />Cheat Sheet</TabsTrigger>
-          <TabsTrigger value="examples" className="gap-2"><Lightbulb className="w-4 h-4" />Examples</TabsTrigger>
-        </TabsList>
+      {!content && !generating && (
+        <Card className="border-dashed border-2 border-border bg-card">
+          <CardContent className="p-10 text-center">
+            <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-semibold text-foreground mb-1">Lesson content not yet loaded</h3>
+            <p className="text-sm text-muted-foreground mb-4">Generate AI-powered lesson content for this topic</p>
+            <Button onClick={generateContent} className="gap-2">
+              <Lightbulb className="w-4 h-4" />Generate Lesson
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-        {!content && !generating && (
-          <div className="mt-6">
-            <Card className="border-dashed border-2 border-border">
-              <CardContent className="p-10 text-center">
-                <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-1">Lesson content not yet loaded</h3>
-                <p className="text-sm text-muted-foreground mb-4">Generate AI-powered lesson content for this topic</p>
-                <Button onClick={generateContent} className="gap-2">
-                  <Lightbulb className="w-4 h-4" />Generate Lesson
-                </Button>
-              </CardContent>
-            </Card>
+      {generating && (
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">Generating lesson content...</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {generating && (
-          <div className="mt-6 flex items-center justify-center py-16">
-            <div className="text-center">
-              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm">Generating lesson content...</p>
-            </div>
-          </div>
-        )}
-
-        {content && (
-          <>
-            <TabsContent value="lesson" className="mt-4">
-              <Card className="border-border/50">
-                <CardContent className="p-6 prose prose-sm dark:prose-invert max-w-none">
-                  <div className="text-foreground leading-relaxed whitespace-pre-wrap">{content.explanation}</div>
-                  {content.formulas?.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="font-display font-semibold text-foreground mb-3">Key Formulas</h3>
-                      <div className="space-y-2">
-                        {content.formulas.map((f, i) => (
-                          <div key={i} className="bg-muted/50 rounded-lg px-4 py-3 font-mono text-sm text-foreground">
-                            {f}
-                          </div>
-                        ))}
-                      </div>
+      {content && (
+        <div className="space-y-8">
+          <Card className="border-0 shadow-sm bg-card rounded-2xl">
+            <CardContent className="p-6 sm:p-8">
+              <div className="text-foreground leading-7 whitespace-pre-wrap text-base">{content.explanation}</div>
+              {content.formulas?.length > 0 && (
+                <div className="mt-8 space-y-4">
+                  {content.formulas.map((formula, index) => (
+                    <div key={index} className="rounded-xl bg-muted/40 px-5 py-4 text-center font-mono text-sm sm:text-base text-foreground">
+                      {formula}
                     </div>
-                  )}
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {content.cheatsheet?.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" /> Quick Reference
+              </h2>
+              <Card className="border-0 shadow-sm bg-card rounded-2xl">
+                <CardContent className="p-6">
+                  <ul className="space-y-3">
+                    {content.cheatsheet.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-foreground leading-relaxed">
+                        <span className="mt-1 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </section>
+          )}
 
-            <TabsContent value="cheatsheet" className="mt-4">
-              <Card className="border-border/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Quick Reference — {topic.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {content.cheatsheet?.length > 0 ? (
-                    <ul className="space-y-3">
-                      {content.cheatsheet.map((item, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</div>
-                          <p className="text-sm text-foreground leading-relaxed">{item}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : <p className="text-sm text-muted-foreground">No cheat sheet available.</p>}
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <section className="space-y-4">
+            <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-primary" /> Worked Examples
+            </h2>
+            {content.examples?.length > 0 ? (
+              <div className="space-y-4">
+                {content.examples.map((example, index) => (
+                  <WorkedExampleCard key={index} example={example} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No examples available.</p>
+            )}
+          </section>
+        </div>
+      )}
 
-            <TabsContent value="examples" className="mt-4 space-y-4">
-              {content.examples?.length > 0 ? (
-                content.examples.map((ex, i) => (
-                  <Card key={i} className="border-border/50">
-                    <CardContent className="p-5">
-                      <div className="mb-3">
-                        <Badge variant="secondary" className="text-xs mb-2">Example {i + 1}</Badge>
-                        <p className="text-sm font-medium text-foreground">{ex.problem}</p>
-                      </div>
-                      <div className="border-t border-border/50 pt-3">
-                        <p className="text-xs text-muted-foreground font-medium mb-1.5">Solution:</p>
-                        <p className="text-sm text-foreground bg-muted/30 rounded-lg p-3">{ex.solution}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : <p className="text-sm text-muted-foreground">No examples available.</p>}
-            </TabsContent>
-          </>
+      <div className="sticky bottom-0 -mx-6 px-6 py-3 bg-background/95 backdrop-blur border-t border-border flex justify-end gap-2">
+        {!isCompleted && (
+          <Button onClick={markComplete} className="rounded-xl gap-2 shadow-sm">
+            <CheckCircle className="w-4 h-4" />Mark as Complete
+          </Button>
         )}
-      </Tabs>
+        <Button asChild className="rounded-xl shadow-sm">
+          <Link to={`/courses/${courseCode}`}>Next</Link>
+        </Button>
+      </div>
     </div>
   );
 }
