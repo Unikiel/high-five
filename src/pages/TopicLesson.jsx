@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { ChevronLeft, CheckCircle, BookOpen, FileText, Lightbulb } from "lucide-react";
-import { BlockMath } from "react-katex";
+import { ChevronLeft, CheckCircle, BookOpen, Lightbulb } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BackLink from "@/components/BackLink";
 import WorkedExampleCard from "@/components/lesson/WorkedExampleCard";
+import LessonContent from "@/components/lesson/LessonContent";
+import FormulaList from "@/components/lesson/FormulaList";
+import QuickReference from "@/components/lesson/QuickReference";
 
 export default function TopicLesson() {
   const { courseCode, topicId } = useParams();
@@ -103,7 +105,6 @@ export default function TopicLesson() {
     .split("\n\n")
     .filter((paragraph) => !paragraph.trim().startsWith("Worked Example"))
     .join("\n\n");
-  const cleanFormula = (formula) => String(formula || "").replace(/^\$|\$$/g, "");
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -154,40 +155,11 @@ export default function TopicLesson() {
 
       {content && (
         <div className="space-y-8">
-          <Card className="border-0 shadow-sm bg-card rounded-2xl">
-            <CardContent className="p-6 sm:p-8">
-              <div className="text-foreground leading-7 whitespace-pre-wrap text-base">{cleanLessonText(content.explanation)}</div>
-              {content.formulas?.length > 0 && (
-                <div className="mt-8 space-y-4">
-                  {content.formulas.map((formula, index) => (
-                    <div key={index} className="rounded-xl bg-muted/40 px-5 py-4 text-center text-foreground overflow-x-auto">
-                      <BlockMath math={cleanFormula(formula)} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <LessonContent text={cleanLessonText(content.explanation)} />
 
-          {content.cheatsheet?.length > 0 && (
-            <section className="space-y-4">
-              <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" /> Quick Reference
-              </h2>
-              <Card className="border-0 shadow-sm bg-card rounded-2xl">
-                <CardContent className="p-6">
-                  <ul className="space-y-3">
-                    {content.cheatsheet.map((item, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-foreground leading-relaxed">
-                        <span className="mt-1 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </section>
-          )}
+          <FormulaList formulas={content.formulas || []} />
+
+          <QuickReference items={content.cheatsheet || []} />
 
           <section className="space-y-4">
             <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">

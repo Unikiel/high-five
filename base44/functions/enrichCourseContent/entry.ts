@@ -80,6 +80,52 @@ function buildStatsContent(topic) {
   };
 }
 
+function csaFocus(title) {
+  const t = title.toLowerCase();
+  if (t.includes('primitive')) return { area: 'primitive data types', definitions: ['int: whole-number primitive type', 'double: decimal primitive type', 'boolean: true-or-false primitive type'], example: 'Choose int for a count, double for an average, and boolean for a condition.' };
+  if (t.includes('object')) return { area: 'objects and references', definitions: ['object: an instance of a class', 'reference variable: stores the location of an object', 'null: no object reference'], example: 'String name = new String("Ada"); creates an object and stores its reference in name.' };
+  if (t.includes('method') || t.includes('signature')) return { area: 'method calls and signatures', definitions: ['method signature: method name plus parameter list', 'return type: data type a method sends back', 'void: method returns no value'], example: 'int total = score.getPoints(); calls getPoints and stores the returned int.' };
+  if (t.includes('wrapper')) return { area: 'wrapper classes', definitions: ['Integer: object wrapper for int', 'Double: object wrapper for double', 'autoboxing: automatic primitive-to-wrapper conversion', 'unboxing: automatic wrapper-to-primitive conversion'], example: 'ArrayList<Integer> scores = new ArrayList<Integer>(); uses Integer because ArrayList stores objects, not int primitives.' };
+  if (t.includes('string')) return { area: 'String objects', definitions: ['String: immutable sequence of characters', 'substring(start,end): returns characters from start through end-1', 'indexOf(str): returns first index or -1'], example: '"computer".substring(0,4) returns "comp".' };
+  if (t.includes('boolean') || t.includes('if')) return { area: 'Boolean expressions and selection', definitions: ['&&: true only when both sides are true', '||: true when at least one side is true', '!: negates a Boolean value'], example: 'if (score >= 90 && late == false) only runs when both conditions are satisfied.' };
+  if (t.includes('loop') || t.includes('iteration')) return { area: 'iteration', definitions: ['for loop: repeats with initialization, condition, and update', 'while loop: repeats while a condition remains true', 'off-by-one error: loop runs one too many or one too few times'], example: 'for (int i = 0; i < nums.length; i++) visits every valid array index.' };
+  if (t.includes('arraylist')) return { area: 'ArrayList', definitions: ['ArrayList: resizable list of objects', 'size(): number of elements', 'get(index): reads an element', 'remove(index): deletes and shifts later elements left'], example: 'When removing while traversing, adjust the index or traverse backward to avoid skipping elements.' };
+  if (t.includes('array')) return { area: 'arrays', definitions: ['array: fixed-length indexed collection', 'length: number of array elements', 'index: position starting at 0'], example: 'scores[scores.length - 1] accesses the last score.' };
+  if (t.includes('inheritance')) return { area: 'inheritance', definitions: ['extends: creates an is-a relationship', 'super: accesses superclass constructor or method', 'overriding: subclass provides its own method implementation'], example: 'class Dog extends Animal means every Dog can be treated as an Animal.' };
+  if (t.includes('polymorphism')) return { area: 'polymorphism', definitions: ['polymorphism: superclass reference can hold subclass object', 'dynamic dispatch: Java chooses the overridden method at runtime'], example: 'Animal a = new Dog(); a.speak(); runs Dog\'s speak method if it overrides Animal\'s method.' };
+  if (t.includes('recursion')) return { area: 'recursion', definitions: ['base case: condition that stops recursion', 'recursive call: method calls itself on a smaller problem', 'call stack: stores unfinished method calls'], example: 'A recursive factorial stops at n == 1 and otherwise returns n * factorial(n - 1).' };
+  return { area: title, definitions: ['trace: follow code step by step', 'state: current variable values', 'edge case: input that tests a boundary'], example: 'Trace each assignment, branch, and loop update before choosing an answer.' };
+}
+
+function buildCSAContent(topic) {
+  const focus = csaFocus(topic.title);
+  return {
+    description: `${topic.title} teaches ${focus.area} in Java and how AP CSA expects students to read, trace, and explain code accurately.`,
+    key_concepts: [
+      `Define the main vocabulary for ${focus.area}`,
+      `Trace Java code involving ${topic.title}`,
+      `Predict output and final variable values`,
+      `Recognize common AP distractors and edge cases`,
+      `Explain why a code segment works or fails`
+    ],
+    latex_formulas: focus.definitions,
+    lesson_content: `Definition and Big Idea\n${topic.title} focuses on ${focus.area}. On the AP Computer Science A exam, this topic is tested through short Java code segments, object behavior, method calls, and questions that require exact tracing rather than vague descriptions.\n\nCore Definitions\n${focus.definitions.join('\n')}\n\nHow It Works\n${focus.example} The key is to identify the type of each value, what operation Java performs, and whether the result changes an object, returns a value, or only changes a local variable.\n\nAP Exam Strategy\nBefore answering, mark the variable types, trace one line at a time, and write down changed values after each statement. For ${topic.title}, pay special attention to Java rules that are easy to overlook, because many wrong choices are based on a single skipped update or mistaken type assumption.\n\nCommon Mistakes\nDo not describe the idea generally without tracing the code. Avoid assuming that primitives and objects behave the same way, forgetting zero-based indexing, ignoring return values, or missing changes caused by mutation.`,
+    cheatsheet: [
+      `Topic focus: ${focus.area}`,
+      `Know these definitions: ${focus.definitions.join('; ')}`,
+      `Trace code line by line and record variable changes`,
+      `Check Java type rules before predicting output`,
+      `Look for edge cases such as 0, 1, null, empty strings, and boundary indexes`,
+      `Explain behavior using Java vocabulary, not generic wording`
+    ].join('\n'),
+    worked_examples: [
+      { problem: `In ${topic.title}, what should you identify before tracing a code segment?`, solution: `Identify each variable's declared type, the value it currently stores, and whether each operation returns a new value or changes an existing object. For this topic, that prevents confusing ${focus.area} with a generic algorithm question.` },
+      { problem: `AP-style example: ${focus.example} What is the safest way to justify the result?`, solution: `State the Java rule being used, trace the relevant statement, then connect the final value or behavior back to that rule. A complete answer names the concept, shows the step, and explains the result.` },
+      { problem: `What mistake is most likely on a multiple-choice question about ${topic.title}?`, solution: `A distractor will usually skip one update, apply the wrong type rule, or assume behavior that Java does not use. Re-tracing the exact line that changes the value is the best way to eliminate it.` }
+    ]
+  };
+}
+
 async function generateBatch(base44, items) {
   return await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt: `Create original AP study content inspired only by the idea of concise AP study guides and practice support. Do not copy Fiveable or any source. Do not use generic subject-wide templates. Every topic must have content specific to its exact title and unit.\n\nFor each topic, return:\n- description: one sentence specific to the topic\n- key_concepts: 5 short, topic-specific bullets\n- latex_formulas: 0-5 formulas; include only formulas directly relevant to this exact topic; for CS use [] unless a real concept notation is helpful\n- lesson_content: markdown with sections: Big Idea, What You Must Know, How AP Tests It, Common Mistakes. Each section must mention the actual topic and use details that would not fit every other topic.\n- cheatsheet: compact newline checklist specific to the topic\n- worked_examples: exactly 2 examples with concrete problem and solution; examples must be specific, not generic.\n\nSubject rules:\n${items.map((item) => `${item.id}: ${COURSE_NAMES[item.course_id]} / ${item.unit_title} / ${item.topic_number} ${item.title} — ${subjectRules(item.course_id)}`).join('\n')}\n\nReturn JSON only.`,
@@ -147,7 +193,9 @@ Deno.serve(async (req) => {
 
     const generated = courseId === 'AP_STATS'
       ? { topics: topics.map((topic) => ({ id: topic.id, ...buildStatsContent(topic) })) }
-      : await generateBatch(base44, topics);
+      : courseId === 'AP_CSA'
+        ? { topics: topics.map((topic) => ({ id: topic.id, ...buildCSAContent(topic) })) }
+        : await generateBatch(base44, topics);
     const byId = new Map((generated.topics || []).map((topic) => [topic.id, topic]));
     let enriched = 0;
 
