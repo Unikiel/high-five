@@ -32,14 +32,15 @@ const PAGES = [
   { id: "admin_sessions", label: "Admin · Sessions", path: "/admin/sessions" },
   { id: "admin_billing",  label: "Admin · Billing",  path: "/admin/billing" },
   { id: "admin_roles",    label: "Admin · Roles",    path: "/admin/roles" },
+  { id: "admin_security", label: "Admin · Security", path: "/admin/security" },
 ];
 
 // Default access matrix — source of truth for what each role can access
 const DEFAULT_MATRIX = {
-  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: true,  admin_reports: true,  admin_sessions: true,  admin_billing: true,  admin_roles: true  },
-  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: true,  admin_sessions: true,  admin_billing: false, admin_roles: false },
-  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: false, admin_sessions: true,  admin_billing: false, admin_roles: false },
-  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: true,  admin_reports: true,  admin_sessions: true,  admin_billing: true,  admin_roles: true,  admin_security: true  },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: true,  admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: false, admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
 };
 
 const STORAGE_KEY = "hf-role-matrix";
@@ -143,7 +144,7 @@ export default function AdminRoles() {
 
   const toggle = (role, page) => {
     // Prevent removing admin's own access to critical pages
-    if (role === "admin" && ["admin", "admin_roles"].includes(page)) return;
+    if (role === "admin" && ["admin", "admin_roles", "admin_security"].includes(page)) return;
     setMatrix(prev => {
       const next = { ...prev, [role]: { ...prev[role], [page]: !prev[role][page] } };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -262,7 +263,7 @@ export default function AdminRoles() {
                     </td>
                     {ROLES.map(role => {
                       const allowed = matrix[role.id]?.[page.id] ?? false;
-                      const locked = role.id === "admin" && ["admin", "admin_roles"].includes(page.id);
+                      const locked = role.id === "admin" && ["admin", "admin_roles", "admin_security"].includes(page.id);
                       return (
                         <td key={role.id} className="py-3 px-4 text-center">
                           <button

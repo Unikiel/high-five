@@ -32,13 +32,14 @@ const ALL_NAV_ITEMS = [
   { path: "/admin/sessions", icon: Calendar, label: "Sessions", page: "admin_sessions" },
   { path: "/admin/billing", icon: CreditCard, label: "Billing", page: "admin_billing" },
   { path: "/admin/roles", icon: Shield, label: "Roles & Permissions", page: "admin_roles" },
+  { path: "/admin/security", icon: Shield, label: "Security", page: "admin_security" },
 ];
 
 const DEFAULT_MATRIX = {
-  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true },
-  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
-  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
-  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false },
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true, admin_security: true },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
 };
 
 export default function Layout() {
@@ -54,7 +55,10 @@ export default function Layout() {
     const matrix = (() => {
       try {
         const saved = localStorage.getItem("hf-role-matrix");
-        return saved ? JSON.parse(saved) : DEFAULT_MATRIX;
+        const parsed = saved ? JSON.parse(saved) : {};
+        return Object.fromEntries(
+          Object.keys(DEFAULT_MATRIX).map(role => [role, { ...DEFAULT_MATRIX[role], ...(parsed[role] || {}) }])
+        );
       } catch {
         return DEFAULT_MATRIX;
       }

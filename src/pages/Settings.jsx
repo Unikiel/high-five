@@ -2,12 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/lib/ThemeContext";
 import { base44 } from "@/api/base44Client";
-import { User, Shield, KeyRound, Pencil, Check, Camera, Loader2 } from "lucide-react";
+import { User, KeyRound, Pencil, Check, Camera, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import ThemeSelector from "@/components/ThemeSelector";
 import BackLink from "@/components/BackLink";
@@ -212,25 +211,6 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Security */}
-      {user?.role === "admin" && (
-        <Card className="border-border/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />Security
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="text-sm font-medium text-foreground">Content Protection</p>
-                <p className="text-xs text-muted-foreground">Copy & paste is disabled to protect content</p>
-              </div>
-              <Switch checked={true} disabled />
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
