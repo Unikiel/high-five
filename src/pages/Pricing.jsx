@@ -94,7 +94,7 @@ export default function Pricing() {
           <Badge className="mb-4 bg-primary/10 text-primary border-0">Pricing</Badge>
           <h1 className="font-display text-5xl font-bold text-foreground mb-4">Invest in your 5</h1>
           <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-            Full access to all 10 courses, unlimited practice exams, and adaptive AI coaching.
+            Full access to all courses, unlimited practice exams, and adaptive coaching.
           </p>
         </div>
 
@@ -109,18 +109,41 @@ export default function Pricing() {
           </div>
         )}
 
-        <div className="mb-8 rounded-2xl border bg-card p-5 max-w-2xl mx-auto">
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-foreground">Email for special discount</label>
-              <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="you@email.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
+        <div className="mb-8 grid gap-4 max-w-3xl mx-auto">
+          <Card className="border-border/60 shadow-sm">
+            <CardContent className="p-5">
+              <h2 className="font-display text-lg font-semibold text-foreground mb-3">How payment works</h2>
+              <div className="grid sm:grid-cols-4 gap-3 text-sm">
+                {["Choose a plan", "Enter any code", "Pay securely", "Access is activated"].map((step, index) => (
+                  <div key={step} className="rounded-xl bg-muted/40 p-3">
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold mb-2">{index + 1}</div>
+                    <p className="font-medium text-foreground">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="rounded-2xl border bg-card p-5">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h2 className="font-display text-lg font-semibold text-foreground">Have a discount code?</h2>
+                <p className="text-sm text-muted-foreground">Enter the customer email and code provided by the admin or tutor.</p>
+              </div>
+              <Badge variant="secondary">Optional</Badge>
             </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Discount codes</label>
-              <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm uppercase" placeholder="VIP25, FRIEND10" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} />
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground">Customer email</label>
+                <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="you@email.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Discount code</label>
+                <input className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm uppercase" placeholder="VIP25" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} />
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground mt-3">Admins create codes in Admin → Billing → Special Customer Discounts, then share the code with the customer.</p>
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Enter multiple codes separated by commas; valid discounts stack with the plan offer at checkout.</p>
         </div>
 
         {loading ? (

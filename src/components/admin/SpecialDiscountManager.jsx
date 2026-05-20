@@ -57,6 +57,7 @@ export default function SpecialDiscountManager() {
         <CardTitle className="flex items-center gap-2">
           <Tag className="w-5 h-5 text-primary" /> Special Customer Discounts
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-2">Create a code here, then send that code to your customer. If you add their email, only that customer can use it.</p>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid md:grid-cols-6 gap-3 items-end">

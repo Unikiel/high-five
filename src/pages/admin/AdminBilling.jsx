@@ -14,9 +14,9 @@ import BackLink from "@/components/BackLink";
 import SpecialDiscountManager from "@/components/admin/SpecialDiscountManager";
 
 const DEFAULT_PLANS = [
-  { plan_name: "Weekly", plan_type: "weekly", price: 9.99, original_price: 9.99, discount_percent: 0, is_active: true, features: ["All 10 AP Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking"] },
-  { plan_name: "Monthly", plan_type: "monthly", price: 29.99, original_price: 39.99, discount_percent: 25, is_active: true, features: ["All 10 AP Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking", "1 Tutoring Session/mo"] },
-  { plan_name: "Yearly", plan_type: "yearly", price: 199.99, original_price: 479.88, discount_percent: 58, is_active: true, features: ["All 10 AP Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking", "4 Tutoring Sessions/mo", "Priority Support"] },
+  { plan_name: "Weekly", plan_type: "weekly", price: 9.99, original_price: 9.99, discount_percent: 0, is_active: true, features: ["All Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking"] },
+  { plan_name: "Monthly", plan_type: "monthly", price: 29.99, original_price: 39.99, discount_percent: 25, is_active: true, features: ["All Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking", "1 Tutoring Session/mo"] },
+  { plan_name: "Yearly", plan_type: "yearly", price: 199.99, original_price: 479.88, discount_percent: 58, is_active: true, features: ["All Courses", "Unlimited Practice Exams", "AI-Adaptive Questions", "Progress Tracking", "4 Tutoring Sessions/mo", "Priority Support"] },
 ];
 
 export default function AdminBilling() {
