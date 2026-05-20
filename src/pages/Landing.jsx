@@ -130,13 +130,13 @@ export default function Landing() {
           <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-10">Comprehensive content for all major exam curricula</p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {COURSES.map(course => (
-              <div key={course.code} className="bg-background rounded-2xl p-4 border border-border/50 hover:shadow-md transition-all text-center group">
+              <Link key={course.code} to={`/courses/${course.code}`} className="bg-background rounded-2xl p-4 border border-border/50 hover:shadow-md transition-all text-center group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
                 <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center text-2xl text-white shadow-sm group-hover:scale-110 transition-transform"
                   style={{ backgroundColor: course.color }}>
                   {course.icon}
                 </div>
                 <h3 className="text-xs font-semibold text-foreground leading-tight">{course.name}</h3>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
