@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import BackLink from "@/components/BackLink";
+import GoogleStyleSessionCalendar from "@/components/tutoring/GoogleStyleSessionCalendar";
 
 const STATUS_CONFIG = {
   pending: { color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400", icon: AlertCircle },
@@ -197,33 +198,7 @@ export default function Tutoring() {
         </Dialog>
       </div>
 
-      {calendarDays.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-foreground">Session Calendar</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {calendarDays.map(([date, daySessions]) => (
-              <Card key={date} className="border-border/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary" />{new Date(date).toLocaleDateString()}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {daySessions.map(session => {
-                    const course = COURSES.find(c => c.code === session.course_id);
-                    return (
-                      <div key={session.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-                        <div className="font-medium text-foreground">{course?.name || session.course_id}</div>
-                        <div className="text-muted-foreground">{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""} · {session.duration_minutes} min</div>
-                      </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+      <GoogleStyleSessionCalendar sessions={upcoming} columns={2} />
 
       {/* Upcoming */}
       <div className="space-y-4">

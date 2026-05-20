@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BackLink from "@/components/BackLink";
+import GoogleStyleSessionCalendar from "@/components/tutoring/GoogleStyleSessionCalendar";
 
 export default function AdminSessions() {
   const { user } = useAuth();
@@ -83,34 +84,7 @@ export default function AdminSessions() {
         </Select>
       </div>
 
-      {!loading && calendarDays.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-semibold text-foreground">Session Calendar</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {calendarDays.map(([date, daySessions]) => (
-              <Card key={date} className="border-border/50">
-                <CardContent className="p-4">
-                  <div className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary" />{new Date(date).toLocaleDateString()}
-                  </div>
-                  <div className="space-y-2">
-                    {daySessions.map(session => {
-                      const course = COURSES.find(c => c.code === session.course_id);
-                      return (
-                        <div key={session.id} className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-                          <div className="font-medium text-foreground">{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""}</div>
-                          <div className="text-muted-foreground truncate">{course?.name || session.course_id}</div>
-                          <div className="text-xs text-muted-foreground truncate">{getName(session.student_id)}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+      {!loading && <GoogleStyleSessionCalendar sessions={filtered} getName={getName} showStudent columns={3} />}
 
       {loading ? (
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-28 bg-muted animate-pulse rounded-xl" />)}</div>

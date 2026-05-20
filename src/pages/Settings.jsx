@@ -213,22 +213,24 @@ export default function Settings() {
       </Card>
 
       {/* Security */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" />Security
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium text-foreground">Content Protection</p>
-              <p className="text-xs text-muted-foreground">Copy & paste is disabled to protect content</p>
+      {user?.role === "admin" && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />Security
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">Content Protection</p>
+                <p className="text-xs text-muted-foreground">Copy & paste is disabled to protect content</p>
+              </div>
+              <Switch checked={true} disabled />
             </div>
-            <Switch checked={true} disabled />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
