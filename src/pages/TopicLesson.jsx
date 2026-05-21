@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BackLink from "@/components/BackLink";
 import WorkedExampleCard from "@/components/lesson/WorkedExampleCard";
-import LessonContent from "@/components/lesson/LessonContent";
+import RichTextRenderer from "@/components/lesson/RichTextRenderer";
 import FormulaList from "@/components/lesson/FormulaList";
 import QuickReference from "@/components/lesson/QuickReference";
 import InlineLessonEditor from "@/components/lesson/InlineLessonEditor";
@@ -184,7 +184,7 @@ export default function TopicLesson() {
             <InlineLessonEditor content={content} saving={saving} onCancel={() => setIsEditing(false)} onSave={saveLessonContent} />
           ) : (
             <>
-              <LessonContent text={cleanLessonText(content.explanation)} />
+              <RichTextRenderer html={cleanLessonText(content.explanation)} />
 
           <FormulaList formulas={content.formulas || []} />
 
