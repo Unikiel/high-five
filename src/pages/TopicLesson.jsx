@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { ChevronLeft, CheckCircle, BookOpen, Lightbulb } from "lucide-react";
+import { ChevronLeft, CheckCircle, BookOpen, Lightbulb, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import WorkedExampleCard from "@/components/lesson/WorkedExampleCard";
 import LessonContent from "@/components/lesson/LessonContent";
 import FormulaList from "@/components/lesson/FormulaList";
 import QuickReference from "@/components/lesson/QuickReference";
+import InlineLessonEditor from "@/components/lesson/InlineLessonEditor";
 
 export default function TopicLesson() {
   const { courseCode, topicId } = useParams();
@@ -22,6 +23,8 @@ export default function TopicLesson() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [content, setContent] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => { loadData(); }, [topicId]);
 
@@ -78,6 +81,20 @@ export default function TopicLesson() {
     setGenerating(false);
   };
 
+  const saveLessonContent = async (nextContent) => {
+    setSaving(true);
+    await base44.entities.Topic.update(topic.id, {
+      lesson_content: nextContent.explanation,
+      latex_formulas: nextContent.formulas,
+      cheatsheet: nextContent.cheatsheet.join("\n"),
+      worked_examples: nextContent.examples,
+    });
+    setContent(nextContent);
+    setIsEditing(false);
+    setSaving(false);
+    loadData();
+  };
+
   const markComplete = async () => {
     try {
       if (progress?.id) {
@@ -101,6 +118,7 @@ export default function TopicLesson() {
   if (!topic) return <div className="p-6 text-center text-muted-foreground">Topic not found</div>;
 
   const isCompleted = progress?.status === "completed";
+  const canEditLesson = ["admin", "tutor"].includes(user?.role);
   const cleanLessonText = (text) => String(text || "")
     .split("\n\n")
     .filter((paragraph) => !paragraph.trim().startsWith("Worked Example"))
@@ -119,16 +137,23 @@ export default function TopicLesson() {
       </div>
 
       {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">{topic.title}</h1>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">{topic.title}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
           <Badge className="bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300 border-0 rounded-full px-3 py-1">Foundational</Badge>
           {isCompleted && (
             <Badge className="bg-primary/10 text-primary border-0 rounded-full px-3 py-1 gap-1.5">
               <CheckCircle className="w-3.5 h-3.5" />Completed
             </Badge>
-          )}
+            )}
+          </div>
         </div>
+        {canEditLesson && content && !isEditing && (
+          <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded-xl gap-2 flex-shrink-0">
+            <Pencil className="w-4 h-4" />Edit Lesson
+          </Button>
+        )}
       </div>
 
       {!content && !generating && (
@@ -155,26 +180,32 @@ export default function TopicLesson() {
 
       {content && (
         <div className="space-y-8">
-          <LessonContent text={cleanLessonText(content.explanation)} />
+          {isEditing ? (
+            <InlineLessonEditor content={content} saving={saving} onCancel={() => setIsEditing(false)} onSave={saveLessonContent} />
+          ) : (
+            <>
+              <LessonContent text={cleanLessonText(content.explanation)} />
 
           <FormulaList formulas={content.formulas || []} />
 
           <QuickReference items={content.cheatsheet || []} />
 
-          <section className="space-y-4">
-            <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-primary" /> Worked Examples
-            </h2>
-            {content.examples?.length > 0 ? (
-              <div className="space-y-4">
-                {content.examples.map((example, index) => (
-                  <WorkedExampleCard key={index} example={example} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No examples available.</p>
-            )}
-          </section>
+              <section className="space-y-4">
+                <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-primary" /> Worked Examples
+                </h2>
+                {content.examples?.length > 0 ? (
+                  <div className="space-y-4">
+                    {content.examples.map((example, index) => (
+                      <WorkedExampleCard key={index} example={example} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No examples available.</p>
+                )}
+              </section>
+            </>
+          )}
         </div>
       )}
 
