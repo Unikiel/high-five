@@ -36,10 +36,10 @@ const ALL_NAV_ITEMS = [
 ];
 
 const DEFAULT_MATRIX = {
-  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true, admin_security: true },
-  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
-  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
-  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: true,  edit_progress_check: true,  edit_practice_exam: true,  assign_progress_check: true,  assign_practice_exam: true,  admin: true, admin_students: true, admin_courses: true, admin_reports: true, admin_sessions: true, admin_billing: true, admin_roles: true, admin_security: true },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: true,  edit_progress_check: true,  edit_practice_exam: true,  assign_progress_check: false, assign_practice_exam: false, admin: true, admin_students: true, admin_courses: false, admin_reports: true, admin_sessions: true, admin_billing: false, admin_roles: false, admin_security: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: false, edit_progress_check: false, edit_practice_exam: false, assign_progress_check: true,  assign_practice_exam: true,  admin: true, admin_students: true, admin_courses: false, admin_reports: false, admin_sessions: true, admin_billing: false, admin_roles: false, admin_security: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: false, edit_progress_check: false, edit_practice_exam: false, assign_progress_check: false, assign_practice_exam: false, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
 };
 
 export default function Layout() {

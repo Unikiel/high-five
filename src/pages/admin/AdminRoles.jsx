@@ -19,28 +19,33 @@ const ROLES = [
 ];
 
 const PAGES = [
-  { id: "dashboard",      label: "Dashboard",       path: "/dashboard" },
-  { id: "courses",        label: "My Courses",       path: "/courses" },
-  { id: "practice",       label: "Practice Exams",   path: "/practice" },
-  { id: "progress",       label: "My Progress",      path: "/progress" },
-  { id: "tutoring",       label: "Tutoring",         path: "/tutoring" },
-  { id: "settings",       label: "Settings",         path: "/settings" },
-  { id: "admin",          label: "Admin Overview",   path: "/admin" },
-  { id: "admin_students", label: "Admin · Students", path: "/admin/students" },
-  { id: "admin_courses",  label: "Admin · Courses",  path: "/admin/courses" },
-  { id: "admin_reports",  label: "Admin · Reports",  path: "/admin/reports" },
-  { id: "admin_sessions", label: "Admin · Sessions", path: "/admin/sessions" },
-  { id: "admin_billing",  label: "Admin · Billing",  path: "/admin/billing" },
-  { id: "admin_roles",    label: "Admin · Roles",    path: "/admin/roles" },
-  { id: "admin_security", label: "Admin · Security", path: "/admin/security" },
+  { id: "dashboard",              label: "Dashboard",                    path: "/dashboard" },
+  { id: "courses",                label: "My Courses",                    path: "/courses" },
+  { id: "practice",               label: "Practice Exams",                path: "/practice" },
+  { id: "progress",               label: "My Progress",                   path: "/progress" },
+  { id: "tutoring",               label: "Tutoring",                      path: "/tutoring" },
+  { id: "settings",               label: "Settings",                      path: "/settings" },
+  { id: "edit_interactive_lesson", label: "Edit · Interactive Lesson",     path: "Interactive lesson content" },
+  { id: "edit_progress_check",     label: "Edit · Progress Check",         path: "Progress Check" },
+  { id: "edit_practice_exam",      label: "Edit · Practice Exams",         path: "Practice Exams" },
+  { id: "assign_progress_check",   label: "Assign · Progress Check",       path: "Progress Check" },
+  { id: "assign_practice_exam",    label: "Assign · Practice Exams",       path: "Practice Exams" },
+  { id: "admin",                  label: "Admin Overview",                path: "/admin" },
+  { id: "admin_students",         label: "Admin · Students",              path: "/admin/students" },
+  { id: "admin_courses",          label: "Admin · Courses",               path: "/admin/courses" },
+  { id: "admin_reports",          label: "Admin · Reports",               path: "/admin/reports" },
+  { id: "admin_sessions",         label: "Admin · Sessions",              path: "/admin/sessions" },
+  { id: "admin_billing",          label: "Admin · Billing",               path: "/admin/billing" },
+  { id: "admin_roles",            label: "Admin · Roles",                 path: "/admin/roles" },
+  { id: "admin_security",         label: "Admin · Security",              path: "/admin/security" },
 ];
 
 // Default access matrix — source of truth for what each role can access
 const DEFAULT_MATRIX = {
-  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: true,  admin_reports: true,  admin_sessions: true,  admin_billing: true,  admin_roles: true,  admin_security: true  },
-  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: true,  admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
-  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: true,  admin_students: true,  admin_courses: false, admin_reports: false, admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
-  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
+  admin:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: true,  edit_progress_check: true,  edit_practice_exam: true,  assign_progress_check: true,  assign_practice_exam: true,  admin: true,  admin_students: true,  admin_courses: true,  admin_reports: true,  admin_sessions: true,  admin_billing: true,  admin_roles: true,  admin_security: true  },
+  tutor:     { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: true,  edit_progress_check: true,  edit_practice_exam: true,  assign_progress_check: false, assign_practice_exam: false, admin: true,  admin_students: true,  admin_courses: false, admin_reports: true,  admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
+  assistant: { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: false, edit_progress_check: false, edit_practice_exam: false, assign_progress_check: true,  assign_practice_exam: true,  admin: true,  admin_students: true,  admin_courses: false, admin_reports: false, admin_sessions: true,  admin_billing: false, admin_roles: false, admin_security: false },
+  student:   { dashboard: true, courses: true, practice: true, progress: true, tutoring: true, settings: true, edit_interactive_lesson: false, edit_progress_check: false, edit_practice_exam: false, assign_progress_check: false, assign_practice_exam: false, admin: false, admin_students: false, admin_courses: false, admin_reports: false, admin_sessions: false, admin_billing: false, admin_roles: false, admin_security: false },
 };
 
 const STORAGE_KEY = "hf-role-matrix";
@@ -167,7 +172,7 @@ export default function AdminRoles() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-display text-3xl font-bold text-foreground">Role Permissions</h1>
-          <p className="text-muted-foreground mt-1">Page access matrix — control which roles can access each page</p>
+          <p className="text-muted-foreground mt-1">Permission matrix — control page access, editing, and assignment permissions</p>
         </div>
         <div className="flex items-center gap-3">
           {saved && <span className="text-sm text-green-600 font-medium">✓ Saved</span>}
@@ -236,15 +241,15 @@ export default function AdminRoles() {
         })}
       </div>
 
-      {/* Page Access Matrix */}
-      <h2 className="font-display text-lg font-semibold text-foreground">Page Access Matrix</h2>
+      {/* Permission Matrix */}
+      <h2 className="font-display text-lg font-semibold text-foreground">Permission Matrix</h2>
 
       <Card className="border-border/50">
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
-                <th className="text-left py-4 px-6 font-medium text-muted-foreground w-56">Page / Route</th>
+                <th className="text-left py-4 px-6 font-medium text-muted-foreground w-56">Permission / Target</th>
                 {ROLES.map(r => (
                   <th key={r.id} className="py-4 px-4 font-medium text-center">
                     <Badge className={`${r.color} border-0 text-xs`}>{r.label}</Badge>
@@ -255,8 +260,9 @@ export default function AdminRoles() {
             <tbody className="divide-y divide-border/50">
               {PAGES.map((page, i) => {
                 const isAdminSection = page.id.startsWith("admin");
+                const isActionPermission = page.id.startsWith("edit_") || page.id.startsWith("assign_");
                 return (
-                  <tr key={page.id} className={`hover:bg-muted/20 transition-colors ${isAdminSection && i > 5 ? "bg-muted/10" : ""}`}>
+                  <tr key={page.id} className={`hover:bg-muted/20 transition-colors ${isAdminSection || isActionPermission ? "bg-muted/10" : ""}`}>
                     <td className="py-3 px-6">
                       <p className="font-medium text-foreground">{page.label}</p>
                       <p className="text-xs text-muted-foreground font-mono">{page.path}</p>
@@ -294,7 +300,7 @@ export default function AdminRoles() {
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        Note: Changes are saved to this browser's local storage and serve as a reference matrix. Actual route enforcement is handled in code per page.
+        Note: Changes are saved to this browser's local storage and serve as a reference matrix. Actual page and action enforcement is handled in code.
       </p>
 
       {/* Invite User Modal */}
