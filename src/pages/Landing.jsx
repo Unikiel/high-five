@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CheckCircle, Target, TrendingUp, Calendar, Brain, Shield, BookOpen, Zap, Star, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
+import { CheckCircle, Target, TrendingUp, Calendar, Brain, BookOpen, Zap, Star, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
@@ -30,7 +30,6 @@ export default function Landing() {
     { icon: Target, title: "Exam Simulator", desc: "Practice exams that mirror real formats with LaTeX-rendered math.", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30" },
     { icon: TrendingUp, title: "Progress Tracking", desc: "Detailed analytics to identify strengths and target weak areas.", color: "text-green-500", bg: "bg-green-50 dark:bg-green-950/30" },
     { icon: Calendar, title: "1-on-1 Tutoring", desc: "Book personalized sessions with certified tutors.", color: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-950/30" },
-    { icon: Shield, title: "Content Protection", desc: "Secure platform with anti-copy measures to protect your investment.", color: "text-slate-500", bg: "bg-slate-50 dark:bg-slate-950/30" },
   ];
 
   return (
