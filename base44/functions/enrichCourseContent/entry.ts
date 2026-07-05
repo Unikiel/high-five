@@ -47,21 +47,22 @@ Deno.serve(async (req) => {
       return Response.json({ enriched: 0, remaining: 0 });
     }
 
-    const topicList = pending
-      .map((t) => `id=${t.id} | ${COURSE_NAMES[t.course_id] || t.course_id} | Unit: ${t.unit_title} | Topic ${t.topic_number}: ${t.title}`)
-      .join('\n');
+    const startTime = Date.now();
+    const TIME_BUDGET_MS = 85000;
+    let enriched = 0;
 
-    const generated = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      model: 'gemini_3_flash',
-      prompt: `You are an experienced AP teacher and exam reader writing REAL course content aligned to the official College Board Course and Exam Description (CED) for each course. You know the CED topic numbering, learning objectives, essential knowledge statements, and how each topic is actually assessed on the AP exam.
+    for (const topic of pending) {
+      if (enriched > 0 && Date.now() - startTime > TIME_BUDGET_MS) break;
 
-For EACH topic below, write substantive, topic-specific teaching content. Every sentence must be specific to that exact CED topic — never reusable boilerplate that could describe another topic.
+      const generated = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        model: 'gemini_3_flash',
+        prompt: `You are an experienced AP teacher and exam reader writing REAL course content aligned to the official College Board Course and Exam Description (CED). You know the CED topic numbering, learning objectives, essential knowledge statements, and how each topic is actually assessed on the AP exam.
 
-TOPICS:
-${topicList}
+Write substantive, topic-specific teaching content for this topic. Every sentence must be specific to this exact CED topic — never reusable boilerplate that could describe another topic.
 
-For each topic return:
-- id: the topic id exactly as given
+TOPIC: ${COURSE_NAMES[topic.course_id] || topic.course_id} | Unit: ${topic.unit_title} | Topic ${topic.topic_number}: ${topic.title}
+
+Return:
 - description: 1-2 sentences describing exactly what this CED topic covers and its learning objective.
 - key_concepts: 5-7 concrete, topic-specific facts/skills (name actual theorems, rules, quantities, vocabulary, code constructs — with real detail, e.g. "The IVT requires f continuous on [a,b]" not "understand the theorem").
 - latex_formulas: the actual formulas/definitions for this topic as raw LaTeX WITHOUT dollar-sign delimiters (e.g. "\\\\frac{d}{dx}\\\\sin x = \\\\cos x"). Include 2-6 for math/physics/stats topics. For CS topics use short code signatures or notation instead (e.g. "int[] arr = new int[10]"), or [] if nothing fits.
@@ -70,53 +71,39 @@ For each topic return:
 - worked_examples: exactly 2 examples in genuine AP exam style. Each problem uses concrete numbers/functions/scenarios (like real released AP questions). Each solution shows the complete step-by-step work with LaTeX math in $...$ or $$...$$, ending with the final answer. Solutions must be fully worked, not descriptions of what to do.
 
 Return JSON only.`,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          topics: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                description: { type: 'string' },
-                key_concepts: { type: 'array', items: { type: 'string' } },
-                latex_formulas: { type: 'array', items: { type: 'string' } },
-                lesson_content: { type: 'string' },
-                cheatsheet: { type: 'string' },
-                worked_examples: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      problem: { type: 'string' },
-                      solution: { type: 'string' }
-                    },
-                    required: ['problem', 'solution']
-                  }
-                }
-              },
-              required: ['id', 'description', 'key_concepts', 'latex_formulas', 'lesson_content', 'cheatsheet', 'worked_examples']
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            description: { type: 'string' },
+            key_concepts: { type: 'array', items: { type: 'string' } },
+            latex_formulas: { type: 'array', items: { type: 'string' } },
+            lesson_content: { type: 'string' },
+            cheatsheet: { type: 'string' },
+            worked_examples: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  problem: { type: 'string' },
+                  solution: { type: 'string' }
+                },
+                required: ['problem', 'solution']
+              }
             }
-          }
-        },
-        required: ['topics']
-      }
-    });
+          },
+          required: ['description', 'key_concepts', 'latex_formulas', 'lesson_content', 'cheatsheet', 'worked_examples']
+        }
+      });
 
-    const byId = new Map((generated.topics || []).map((topic) => [topic.id, topic]));
-    let enriched = 0;
+      if (!generated || !generated.lesson_content) continue;
 
-    for (const topic of pending) {
-      const content = byId.get(topic.id);
-      if (!content || !content.lesson_content) continue;
       await base44.asServiceRole.entities.Topic.update(topic.id, {
-        description: content.description,
-        key_concepts: content.key_concepts,
-        latex_formulas: content.latex_formulas,
-        lesson_content: content.lesson_content,
-        cheatsheet: content.cheatsheet,
-        worked_examples: content.worked_examples,
+        description: generated.description,
+        key_concepts: generated.key_concepts,
+        latex_formulas: generated.latex_formulas,
+        lesson_content: generated.lesson_content,
+        cheatsheet: generated.cheatsheet,
+        worked_examples: generated.worked_examples,
         content_version: CONTENT_VERSION
       });
       enriched += 1;
