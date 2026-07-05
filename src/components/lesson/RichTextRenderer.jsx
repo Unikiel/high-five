@@ -39,9 +39,17 @@ export default function RichTextRenderer({ html }) {
     <div className="space-y-4">
       <Card className="border border-border/70 shadow-sm bg-card rounded-2xl">
         <CardContent className="p-5 sm:p-6 space-y-3 text-sm sm:text-base leading-7 text-muted-foreground">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{renderMathText(paragraph)}</p>
-          ))}
+          {paragraphs.map((paragraph, index) => {
+            const heading = paragraph.match(/^#{1,6}\s+(.*)$/);
+            if (heading) {
+              return (
+                <h2 key={index} className="font-display text-lg sm:text-xl font-bold text-foreground pt-2">
+                  {renderMathText(heading[1])}
+                </h2>
+              );
+            }
+            return <p key={index}>{renderMathText(paragraph.replace(/\*\*/g, ""))}</p>;
+          })}
         </CardContent>
       </Card>
     </div>
