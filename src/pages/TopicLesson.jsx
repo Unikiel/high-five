@@ -37,7 +37,7 @@ export default function TopicLesson() {
           setContent({
             explanation: topics[0].lesson_content || topics[0].description,
             formulas: topics[0].latex_formulas || [],
-            cheatsheet: topics[0].cheatsheet ? topics[0].cheatsheet.split("\n") : topics[0].key_concepts || [],
+            cheatsheet: topics[0].cheatsheet ? topics[0].cheatsheet.split(/\\n|\n/) : topics[0].key_concepts || [],
             examples: topics[0].worked_examples || []
           });
         }

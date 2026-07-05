@@ -4,7 +4,8 @@ import { InlineMath, BlockMath } from "react-katex";
  * Renders text containing inline ($...$) and display ($$...$$) LaTeX.
  */
 export default function MathText({ text, className }) {
-  const parts = String(text || "").split(/(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$)/g).filter(Boolean);
+  const normalized = String(text || "").replace(/\\n/g, "\n");
+  const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$)/g).filter(Boolean);
 
   return (
     <span className={className}>

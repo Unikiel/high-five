@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MathText from "@/components/MathText";
 
 export default function WorkedExampleCard({ example }) {
   const [showSolution, setShowSolution] = useState(false);
@@ -10,7 +11,7 @@ export default function WorkedExampleCard({ example }) {
       <div className="space-y-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-widest text-primary mb-2">Problem</p>
-          <p className="text-sm sm:text-base font-medium text-foreground leading-relaxed">{example.problem}</p>
+          <div className="text-sm sm:text-base font-medium text-foreground leading-relaxed"><MathText text={example.problem} /></div>
         </div>
 
         <Button
@@ -26,9 +27,9 @@ export default function WorkedExampleCard({ example }) {
 
         {showSolution && (
           <div className="space-y-3 pt-1">
-            <div className="rounded-xl bg-primary/8 border border-primary/10 px-4 py-5 text-center">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-primary text-left mb-3">Answer</p>
-              <p className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">{example.solution}</p>
+            <div className="rounded-xl bg-primary/8 border border-primary/10 px-4 py-5 text-left">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-primary mb-3">Answer</p>
+              <div className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap"><MathText text={example.solution} /></div>
             </div>
             <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-4 dark:bg-amber-950/20 dark:border-amber-900/40">
               <p className="text-[11px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400 mb-2">Explanation</p>

@@ -1,12 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
+import MathText from "@/components/MathText";
 
 function cleanItem(item) {
   return String(item || "").replace(/^[-*]\s*/, "").trim();
 }
 
 export default function QuickReference({ items = [] }) {
-  const cleanItems = items.map(cleanItem).filter(Boolean);
+  const cleanItems = items
+    .flatMap((item) => String(item || "").replace(/\\n/g, "\n").split("\n"))
+    .map(cleanItem)
+    .filter(Boolean);
   if (!cleanItems.length) return null;
 
   return (
@@ -19,7 +23,7 @@ export default function QuickReference({ items = [] }) {
           <div className="grid gap-3 sm:grid-cols-2">
             {cleanItems.map((item, index) => (
               <div key={index} className="rounded-xl bg-muted/40 p-4 text-sm leading-6 text-foreground">
-                <span className="mr-2 font-bold text-primary">{index + 1}.</span>{item}
+                <span className="mr-2 font-bold text-primary">{index + 1}.</span><MathText text={item} />
               </div>
             ))}
           </div>
