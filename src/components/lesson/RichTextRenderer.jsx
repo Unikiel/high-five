@@ -13,7 +13,7 @@ function htmlToText(html) {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/\\n/g, "\n");
+    .replace(/\\n(?![a-z])/g, "\n");
 }
 
 function renderMathText(text) {

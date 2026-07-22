@@ -8,7 +8,7 @@ function cleanItem(item) {
 
 export default function QuickReference({ items = [] }) {
   const cleanItems = items
-    .flatMap((item) => String(item || "").replace(/\\n/g, "\n").split("\n"))
+    .flatMap((item) => String(item || "").replace(/\\n(?![a-z])/g, "\n").split("\n"))
     .map(cleanItem)
     .filter(Boolean);
   if (!cleanItems.length) return null;
