@@ -75,10 +75,26 @@ export default function PracticeExam() {
       const e = await base44.entities.Exam.filter({ id: examId });
       if (e.length > 0) {
         setExam(e[0]);
-        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 500);
+        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 2000);
         const filteredBank = e[0].unit_id ? questionBank.filter(q => q.unit_id === e[0].unit_id) : questionBank;
-        const selectedQuestions = filteredBank
-          .slice(0, e[0].total_questions || 10)
+        let picked;
+        if (e[0].questions?.length) {
+          // Resume: keep the same question set already assigned to this exam
+          const byId = new Map(questionBank.map(q => [q.id, q]));
+          picked = e[0].questions.map(id => byId.get(id)).filter(Boolean);
+        } else {
+          // New exam: draw a random selection from the bank
+          const shuffled = [...filteredBank];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          picked = shuffled.slice(0, e[0].total_questions || 10);
+          if (picked.length) {
+            base44.entities.Exam.update(e[0].id, { questions: picked.map(q => q.id) }).catch(() => {});
+          }
+        }
+        const selectedQuestions = picked
           .map((q, index) => ({
             id: q.id,
             q: q.question_text,
@@ -89,7 +105,7 @@ export default function PracticeExam() {
             number: index + 1
           }));
         setQuestions(selectedQuestions);
-        const mins = e[0].total_questions <= 10 ? 15 : e[0].total_questions <= 20 ? 30 : 90;
+        const mins = e[0].time_limit_minutes || (e[0].total_questions <= 10 ? 15 : e[0].total_questions <= 20 ? 30 : 90);
         setTimeLeft(mins * 60);
         setAnswers(e[0].answers || {});
         timerRef.current = setInterval(() => {
