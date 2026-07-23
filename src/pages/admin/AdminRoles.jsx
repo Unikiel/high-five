@@ -88,31 +88,23 @@ export default function AdminRoles() {
     if (!inviteEmail.trim()) return;
     setInviteSending(true);
     try {
-      const email = inviteEmail.trim();
+      const email = inviteEmail.trim().toLowerCase();
 
-      // inviteUser only accepts "user" or "admin" as base role
-      const baseRole = inviteRole === "admin" ? "admin" : "user";
-      await base44.users.inviteUser(email, baseRole);
-
-      // Wait a moment for the user to be created in the system
-      await new Promise(r => setTimeout(r, 1000));
-
-      // Now reload and update their role
-      const updatedUsers = await base44.entities.User.list();
-      const existingUser = updatedUsers.find(u => u.email === email);
-      if (existingUser) {
-        // Always update role to ensure it matches the selection
-        await base44.entities.User.update(existingUser.id, { role: inviteRole });
-      }
+      // Backend handles invite + reliable role assignment
+      const res = await base44.functions.invoke('inviteUserWithRole', { email, role: inviteRole });
 
       // Reload final list
       const refreshed = await base44.entities.User.list();
       setAllUsers(refreshed);
 
-      setInviteMsg({ text: `Invite sent to ${email} as ${inviteRole}!`, ok: true });
+      if (res.data?.role_applied) {
+        setInviteMsg({ text: `Invite sent to ${email} as ${inviteRole}!`, ok: true });
+      } else {
+        setInviteMsg({ text: `Invite sent to ${email}, but the ${inviteRole} role couldn't be applied yet — set it here after they register.`, ok: true });
+      }
       setInviteEmail("");
       setInviteRole("student");
-      setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 2500);
+      setTimeout(() => { setInviteMsg({ text: "", ok: false }); setShowInvite(false); }, 3500);
     } catch (err) {
       setInviteMsg({ text: `Error: ${err.message}`, ok: false });
     } finally {
@@ -309,7 +301,7 @@ export default function AdminRoles() {
           <div className="bg-card border border-border rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-5" onClick={e => e.stopPropagation()}>
             <div>
               <h2 className="font-display text-lg font-bold text-foreground">Invite User</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform. Once they register, find them in the Student card and update their role here.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">They'll receive an email to join the platform, and the role you pick is applied to their account automatically.</p>
             </div>
 
             <div className="space-y-2">
