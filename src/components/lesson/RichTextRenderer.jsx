@@ -1,5 +1,6 @@
 import { InlineMath, BlockMath } from "react-katex";
 import { Card, CardContent } from "@/components/ui/card";
+import { looksLikeCode } from "@/lib/textFormat";
 
 function htmlToText(html) {
   return String(html || "")
@@ -21,10 +22,18 @@ function renderMathText(text) {
 
   return parts.map((part, index) => {
     if (part.startsWith("$$") && part.endsWith("$$")) {
-      return <BlockMath key={index} math={part.slice(2, -2).trim()} />;
+      const inner = part.slice(2, -2).trim();
+      if (looksLikeCode(inner)) {
+        return <pre key={index} className="font-mono text-[0.95em] whitespace-pre-wrap text-foreground">{inner}</pre>;
+      }
+      return <BlockMath key={index} math={inner} />;
     }
     if (part.startsWith("$") && part.endsWith("$")) {
-      return <InlineMath key={index} math={part.slice(1, -1).trim()} />;
+      const inner = part.slice(1, -1).trim();
+      if (looksLikeCode(inner)) {
+        return <code key={index} className="font-mono text-[0.95em] px-1 rounded bg-muted/60 text-foreground">{inner}</code>;
+      }
+      return <InlineMath key={index} math={inner} />;
     }
     return <span key={index}>{part}</span>;
   });

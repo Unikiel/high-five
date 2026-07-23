@@ -1,6 +1,7 @@
 import { BlockMath } from "react-katex";
 import { Card, CardContent } from "@/components/ui/card";
 import { FunctionSquare } from "lucide-react";
+import { looksLikeCode } from "@/lib/textFormat";
 
 function cleanFormula(formula) {
   return String(formula || "").replace(/^\$|\$$/g, "").trim();
@@ -24,7 +25,9 @@ export default function FormulaList({ formulas = [] }) {
           return (
             <Card key={index} className="border border-border/70 bg-muted/20 rounded-2xl shadow-sm">
               <CardContent className="p-4 sm:p-5 overflow-x-auto">
-                {looksLikeLatex(value) ? (
+                {looksLikeCode(value) ? (
+                  <pre className="text-sm sm:text-base leading-7 text-foreground font-mono whitespace-pre-wrap">{value}</pre>
+                ) : looksLikeLatex(value) ? (
                   <BlockMath math={value} />
                 ) : (
                   <p className="text-sm sm:text-base leading-7 text-foreground">{value}</p>
