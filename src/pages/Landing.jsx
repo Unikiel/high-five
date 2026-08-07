@@ -83,16 +83,16 @@ export default function Landing() {
         </p>
         <p className="text-sm sm:text-base text-muted-foreground italic mb-8 sm:mb-10">Stay consistent, stay confident.</p>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto">
-          <Link to="/register" className="w-full sm:w-auto">
+          <Link to={currentUser ? "/dashboard" : "/register"} className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto gap-2 text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">
-              Start Free Trial <ArrowRight className="w-4 h-4" />
+              {currentUser ? "Go to Dashboard" : "Start Free Trial"} <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
           <Link to="/pricing" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">View Pricing</Button>
           </Link>
         </div>
-        <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>
+        {!currentUser && <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>}
 
         {/* Social proof avatars */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
@@ -162,9 +162,9 @@ export default function Landing() {
       <section className="px-4 sm:px-6 py-14 sm:py-20 text-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">Ready to ace your exams?</h2>
         <p className="text-sm sm:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">Join thousands of students who mastered their exams with High Five.</p>
-        <Link to="/register">
+        <Link to={currentUser ? "/dashboard" : "/register"}>
           <Button size="lg" className="gap-2 text-base px-10 h-12">
-            <Zap className="w-4 h-4" />Start Your Free Trial
+            <Zap className="w-4 h-4" />{currentUser ? "Continue Learning" : "Start Your Free Trial"}
           </Button>
         </Link>
       </section>

@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     
     if (body.display_name !== undefined) updateData.display_name = body.display_name;
     if (body.avatar_url !== undefined) updateData.avatar_url = body.avatar_url;
-    if (body.role !== undefined) updateData.role = body.role;
+    // Note: role is intentionally NOT updatable here — roles are managed by admins only
     if (body.password !== undefined) updateData.password = body.password;
     
     if (Object.keys(updateData).length === 0) {

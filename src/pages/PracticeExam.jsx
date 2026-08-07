@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import MathText from "@/components/MathText";
 
 // Sample question generator (in production, questions come from DB via LLM)
 const generateSampleQuestions = (count, courseId) => {
@@ -74,10 +75,26 @@ export default function PracticeExam() {
       const e = await base44.entities.Exam.filter({ id: examId });
       if (e.length > 0) {
         setExam(e[0]);
-        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 500);
+        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 2000);
         const filteredBank = e[0].unit_id ? questionBank.filter(q => q.unit_id === e[0].unit_id) : questionBank;
-        const selectedQuestions = filteredBank
-          .slice(0, e[0].total_questions || 10)
+        let picked;
+        if (e[0].questions?.length) {
+          // Resume: keep the same question set already assigned to this exam
+          const byId = new Map(questionBank.map(q => [q.id, q]));
+          picked = e[0].questions.map(id => byId.get(id)).filter(Boolean);
+        } else {
+          // New exam: draw a random selection from the bank
+          const shuffled = [...filteredBank];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          picked = shuffled.slice(0, e[0].total_questions || 10);
+          if (picked.length) {
+            base44.entities.Exam.update(e[0].id, { questions: picked.map(q => q.id) }).catch(() => {});
+          }
+        }
+        const selectedQuestions = picked
           .map((q, index) => ({
             id: q.id,
             q: q.question_text,
@@ -88,7 +105,7 @@ export default function PracticeExam() {
             number: index + 1
           }));
         setQuestions(selectedQuestions);
-        const mins = e[0].total_questions <= 10 ? 15 : e[0].total_questions <= 20 ? 30 : 90;
+        const mins = e[0].time_limit_minutes || (e[0].total_questions <= 10 ? 15 : e[0].total_questions <= 20 ? 30 : 90);
         setTimeLeft(mins * 60);
         setAnswers(e[0].answers || {});
         timerRef.current = setInterval(() => {
@@ -180,10 +197,10 @@ export default function PracticeExam() {
                   <div className="flex items-start gap-3">
                     {correct ? <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />}
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground mb-2">Q{i + 1}. {q.q}</p>
+                      <div className="text-sm font-medium text-foreground mb-2">Q{i + 1}. <MathText text={q.q} /></div>
                       <p className="text-xs text-muted-foreground">Your answer: <span className={correct ? "text-green-600 font-medium" : "text-red-600 font-medium"}>{userAns || "Not answered"}</span></p>
                       {!correct && <p className="text-xs text-muted-foreground">Correct: <span className="text-green-600 font-medium">{q.ans}</span></p>}
-                      <p className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded">{q.exp}</p>
+                      <div className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded"><MathText text={q.exp} /></div>
                     </div>
                   </div>
                 </CardContent>
@@ -249,7 +266,7 @@ export default function PracticeExam() {
         <Card className="border-border/50">
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-4 mb-6">
-              <p className="text-foreground font-medium leading-relaxed">{q.q}</p>
+              <div className="text-foreground font-medium leading-relaxed"><MathText text={q.q} /></div>
               <button
                 onClick={() => setFlagged(prev => { const n = new Set(prev); n.has(current) ? n.delete(current) : n.add(current); return n; })}
                 className={`flex-shrink-0 ${flagged.has(current) ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"}`}
@@ -276,7 +293,7 @@ export default function PracticeExam() {
                     }`}>
                       {letter}
                     </span>
-                    <span className="text-sm text-foreground pt-0.5">{opt}</span>
+                    <span className="text-sm text-foreground pt-0.5"><MathText text={opt} /></span>
                   </button>
                 );
               })}

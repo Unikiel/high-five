@@ -11,12 +11,13 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import BackLink from "@/components/BackLink";
+import { REAL_EXAM_CONFIG, DEFAULT_FULL_EXAM } from "@/lib/examConfig";
 
 const EXAM_TYPES = [
-  { id: "quick", label: "Quick Quiz", description: "10 questions, ~15 min", questions: 10, icon: Zap },
-  { id: "unit", label: "Unit Test", description: "20 questions, ~30 min", questions: 20, icon: BookOpen },
-  { id: "full", label: "Full Practice", description: "40 questions, ~90 min", questions: 40, icon: Target },
-  { id: "adaptive", label: "Adaptive", description: "AI-adjusted difficulty", questions: 20, icon: Brain },
+  { id: "quick", label: "Quick Quiz", description: "10 questions, 15 min", questions: 10, minutes: 15, icon: Zap },
+  { id: "unit", label: "Unit Test", description: "20 questions, 30 min", questions: 20, minutes: 30, icon: BookOpen },
+  { id: "full", label: "Full AP Exam (MCQ)", description: "Real exam length & timing", questions: 45, minutes: 90, icon: Target },
+  { id: "adaptive", label: "Adaptive", description: "AI-adjusted difficulty", questions: 20, minutes: 30, icon: Brain },
 ];
 
 export default function Practice() {
@@ -55,6 +56,9 @@ export default function Practice() {
     setStarting(true);
     try {
       const examType = EXAM_TYPES.find(t => t.id === selectedType);
+      const realExam = REAL_EXAM_CONFIG[selectedCourse] || DEFAULT_FULL_EXAM;
+      const totalQuestions = selectedType === "full" ? realExam.questions : examType?.questions;
+      const timeLimit = selectedType === "full" ? realExam.minutes : examType?.minutes;
       let unitId;
       if (selectedUnit !== "all") {
         const matchingUnits = await base44.entities.Unit.filter({ course_id: selectedCourse, unit_number: Number(selectedUnit) });
@@ -65,9 +69,10 @@ export default function Practice() {
         course_id: selectedCourse,
         unit_id: unitId,
         title: `${course?.name} - ${examType?.label}`,
-        type: selectedType === "adaptive" ? "practice" : selectedType === "quick" ? "practice" : "unit",
+        type: selectedType === "full" ? "full" : selectedType === "unit" ? "unit" : "practice",
         status: "in_progress",
-        total_questions: examType?.questions,
+        total_questions: totalQuestions,
+        time_limit_minutes: timeLimit,
         adaptive_difficulty: selectedType === "adaptive" ? "adaptive" : "medium",
         started_at: new Date().toISOString(),
         answers: {}
@@ -152,7 +157,10 @@ export default function Practice() {
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-3">
-                {EXAM_TYPES.map(({ id, label, description, icon: Icon }) => (
+                {EXAM_TYPES.map(({ id, label, description, icon: Icon }) => {
+                  const cfg = REAL_EXAM_CONFIG[selectedCourse];
+                  const desc = id === "full" && cfg ? `${cfg.questions} questions, ${cfg.minutes} min — real AP format` : description;
+                  return (
                   <button
                     key={id}
                     onClick={() => setSelectedType(id)}
@@ -167,10 +175,11 @@ export default function Practice() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
                     </div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

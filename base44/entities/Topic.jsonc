@@ -51,6 +51,15 @@
     },
     "order": {
       "type": "number"
+    },
+    "content_version": {
+      "type": "number",
+      "description": "Version of the AI-enriched lesson content"
+    },
+    "questions_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether exam questions have been generated for this topic"
     }
   },
   "required": [
