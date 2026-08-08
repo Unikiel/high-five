@@ -1,12 +1,13 @@
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { RootRedirect, RequireGuest, RedirectToLogin } from "@/components/AuthGates";
 
 // Pages
 import Landing from "@/pages/Landing";
@@ -60,16 +61,25 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      {/* Entry point: never the marketing page — either the app or the login form */}
+      <Route path="/" element={<RootRedirect />} />
+
       {/* Public routes */}
-      <Route path="/" element={<Landing />} />
+      <Route path="/welcome" element={<Landing />} />
       <Route path="/pricing" element={<Pricing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+
+      {/* Auth routes, closed to users who are already signed in */}
+      <Route element={<RequireGuest />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
+
+      {/* Reachable while signed in, so password reset links from email always work */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected student + staff routes */}
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+      <Route element={<ProtectedRoute unauthenticatedElement={<RedirectToLogin />} />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/courses" element={<Courses />} />

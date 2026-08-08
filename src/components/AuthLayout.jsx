@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import AuthBrandPanel, { Wordmark } from "@/components/AuthBrandPanel";
 import { APP_SLOGAN, LOGO_URL } from "@/lib/brand";
+import { MARKETING_HOME } from "@/lib/authRedirect";
 
 export default function AuthLayout({
   title,
@@ -25,7 +26,7 @@ export default function AuthLayout({
         {/* Compact brand band stands in for the panel on small screens */}
         <div className="hf-panel relative lg:hidden px-5 pt-6 pb-8 overflow-hidden">
           <Link
-            to="/"
+            to={MARKETING_HOME}
             className="relative inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -46,7 +47,7 @@ export default function AuthLayout({
 
         <div className="hidden lg:flex justify-end px-8 pt-8">
           <Link
-            to="/"
+            to={MARKETING_HOME}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <ArrowLeft className="w-4 h-4" />

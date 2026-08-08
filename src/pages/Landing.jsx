@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CheckCircle, Target, TrendingUp, Calendar, Brain, BookOpen, Zap, Star, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff1
 
 export default function Landing() {
   const [currentUser, setCurrentUser] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(authed => {
@@ -22,7 +21,6 @@ export default function Landing() {
   const handleLogout = async () => {
     await base44.auth.logout();
     setCurrentUser(null);
-    navigate("/");
   };
   const features = [
     { icon: BookOpen, title: "10 Courses", desc: "Full College Board-aligned content for every subject you need.", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" },

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { resolvePostAuthPath } from "@/lib/authRedirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,11 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const passwordJustSet = searchParams.get("message") === "password_set";
   const navigate = useNavigate();
+  const location = useLocation();
   const { checkUserAuth } = useAuth();
+
+  // The page they were trying to reach before being sent here, or the dashboard.
+  const redirectPath = resolvePostAuthPath(location);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +34,7 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       // Refresh user in context, then SPA-navigate (no full page reload)
       await checkUserAuth({ silent: true });
-      navigate("/dashboard", { replace: true });
+      navigate(redirectPath, { replace: true });
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -38,7 +43,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    base44.auth.loginWithProvider("google", redirectPath);
   };
 
   return (
@@ -48,7 +53,11 @@ export default function Login() {
       footer={
         <>
           New to High Five?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
+          <Link
+            to="/register"
+            state={location.state}
+            className="text-primary font-medium hover:underline"
+          >
             Create an account
           </Link>
         </>
