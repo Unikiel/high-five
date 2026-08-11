@@ -15,8 +15,8 @@
 | Task | Status | Commits |
 |---|---|---|
 | 0.1 Add Vitest | Done | `9ad26c3`, `4178237` |
-| 0.2 Migration audit function | Code done, **not yet run** | `704d161`, `ffbdda4` |
-| 0.3 Snapshot backup function | Not started | — |
+| 0.2 Migration audit function | Code done, **not yet run** | `704d161`, `ffbdda4`, `958e147` |
+| 0.3 Snapshot backup function | Code done, **not yet run** | `bb4aad6`, `958e147` |
 | 1.1 – 1.6 | Not started | — |
 
 **Nothing has touched the production database yet.** Tasks 0.2 and 0.3 only add code; their deploy-and-invoke steps are deliberately deferred to a single batched session (see "Database-run checklist" at the bottom of this document) so that all read-only measurement happens at one consistent point in time.
@@ -706,6 +706,8 @@ git commit -m "feat: add snapshot export for migration rollback"
 
 Today `AdminCourses.jsx:151` lets an admin retype any course's `code` with no duplicate check, and `:52` saves it. Once codes become the seed/URL key this is a foot-gun.
 
+Two details about the real file that the code below depends on: the loader is named `loadCourses`, and there is no `closeForm` helper — the component closes the modal inline with `setShowForm(false)` and `setEditingCourse(null)`.
+
 **Files:**
 - Modify: `src/pages/admin/AdminCourses.jsx:48-60` (the `save` handler), `:149-152` (the code input)
 
@@ -717,36 +719,48 @@ Replace the `save` function (currently at lines 48-60) with:
   const save = async () => {
     if (!form.name.trim() || !form.code.trim()) return;
     const code = form.code.trim().toUpperCase();
-    const clash = courses.find(c => c.code === code && c.id !== editingCourse?.id);
-    if (clash) {
-      setCodeError(`Code ${code} is already used by "${clash.name}".`);
-      return;
-    }
     setCodeError("");
     setSaving(true);
     try {
       if (editingCourse) {
-        // code is the stable business key: never rewrite it on an existing course
-        const { code: _ignored, ...rest } = form;
-        await base44.entities.Course.update(editingCourse.id, rest);
+        // The code is the stable business key linking every unit, topic and
+        // enrollment, so it is never rewritten on an existing course. Because it
+        // cannot change here, there is nothing to check for duplicates.
+        const { name, description, color, icon, exam_date, is_active } = form;
+        await base44.entities.Course.update(editingCourse.id, {
+          name, description, color, icon, exam_date, is_active,
+        });
       } else {
+        // Asked of the server rather than the `courses` array: list() returns only
+        // the first 50 rows until Task 1.6 lands, so an in-memory check would
+        // quietly stop catching clashes once the catalog outgrows one page.
+        const clash = await base44.entities.Course.filter({ code });
+        if (clash.length > 0) {
+          setCodeError(`Code ${code} is already used by "${clash[0].name}".`);
+          return;
+        }
         await base44.entities.Course.create({ ...form, code });
       }
-      await load();
-      closeForm();
+      await loadCourses();
+      setShowForm(false);
+      setEditingCourse(null);
     } finally {
       setSaving(false);
     }
   };
 ```
 
-- [ ] **Step 2: Add the error state**
+This is best-effort, not a guarantee: Base44 has no unique index, so two admins creating the same code simultaneously can still both succeed. `migrationAudit` reports duplicates, which is the backstop.
+
+- [ ] **Step 2: Add the error state and clear it when the form opens**
 
 Beside the other `useState` declarations near the top of the component, add:
 
 ```jsx
   const [codeError, setCodeError] = useState("");
 ```
+
+Then add `setCodeError("");` to both `openAdd` and `openEdit`, so a failed save does not leave a stale error sitting on the next course the admin opens.
 
 - [ ] **Step 3: Disable the input when editing and surface the error**
 
