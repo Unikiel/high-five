@@ -1,10 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);

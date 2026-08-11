@@ -26,6 +26,14 @@ Two corrections were made after Task 0.2 was first written, both worth knowing b
 1. **`listAll` advanced `skip` by a constant page size.** If the platform ever returns fewer rows than requested, that skipped the unreturned rows and silently under-reported every count. It now advances by the number of rows actually returned and terminates on an empty page. This same helper is duplicated in Tasks 0.3, 1.4, 1.5, 2.x and the frontend `fetchAll` in Task 1.6 — all copies in this document already carry the fix, and the bug is much more dangerous in the backfill tasks, where an undercount means silently skipping rows during a *write*.
 2. **The identity metrics were uninterpretable.** `created_by_id` counters were summed across four tables into one scalar, and `payments_without_user_link` counted a field (`Payment.user_id`) that Task 2.1 has not yet created, so it could only ever report 100%. Both are fixed; see Task 0.2 Step 4 for how to read the replacements.
 
+## Known defect to fix before Milestone 2 runs
+
+**`Question.course_id` will never be migrated as the plan currently stands.** Task 1.4 adds a `course_code` field to `Question` and Task 4.1 unsets it, but **no task ever writes it**. `planCourseIdUpdates` resolves the new `course_id` from `course_code`, so for every `Question` row it finds nothing and falls through to its `|| current` branch, leaving the course code in place. Task 4.4's verification expects `course_id_shape.Question` to report `id` equal to the row count, so this surfaces as a confusing failure at the very last step of the migration.
+
+Fix it when Milestone 2 is planned in detail, by either including `Question` in Task 2.3's `backfillLegacyNames` alongside the other tables, or by resolving `Question.course_id` through its already-correct `topic_id`/`unit_id` chain instead of through a code. The second is more robust, since `Question.unit_id` is one of the three fields that were never broken.
+
+This was found while reviewing Task 0.3 and is recorded here rather than fixed now, because Milestone 2 is out of scope for the current session.
+
 ## Context an engineer needs before starting
 
 You have zero context on this codebase. Read this section fully.
@@ -271,10 +279,19 @@ Create `base44/functions/migrationAudit/entry.ts`:
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
@@ -472,10 +489,21 @@ git commit -m "feat: add read-only migration audit function"
 
 ## Task 0.3: Snapshot backup function
 
-Base44 has no transactions and no point-in-time restore. This JSON file is your only way back.
+Base44 has no transactions and no point-in-time restore. This JSON file is your only way back from Task 2.6.
+
+Because it is the only way back, it must actually come back. A naive "export every field of every row" returns the entire database in a single HTTP response from a single Deno isolate, and `Topic` alone carries `lesson_content`, `cheatsheet`, `worked_examples` and `latex_formulas` — large prose blobs that can dominate the payload. If that response dies or is truncated, you learn about it at the worst possible moment.
+
+So the default mode exports **only the fields this migration ever writes**, which is all a rollback needs and a small fraction of the bytes:
+
+- Every rollback in this plan restores foreign keys with a `bulkUpdate` keyed on record `id`. It never recreates a row from scratch.
+- The migration never writes `lesson_content` or any other prose field, so those fields cannot be damaged by it.
+- Topic and question content is regenerable from the canonical catalog by Task 1.5's seeder.
+
+A `mode: 'full'` escape hatch exports everything for archival purposes, and may legitimately fail on a large database. The response states which mode produced it so the file is self-describing.
 
 **Files:**
 - Create: `base44/functions/exportSnapshot/entry.ts`
+- Modify: `.gitignore`
 
 - [ ] **Step 1: Write the function**
 
@@ -485,14 +513,52 @@ Create `base44/functions/exportSnapshot/entry.ts`:
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PAGE = 5000;
-const ENTITIES = [
+const MAX_REQUESTS = 1000;
+
+const ALL_ENTITIES = [
   'Course', 'Unit', 'Topic', 'Question',
-  'Enrollment', 'Progress', 'Exam', 'TutoringSession', 'Payment',
+  'Enrollment', 'Progress', 'Exam', 'TutoringSession', 'Payment', 'User',
 ];
+
+// Every field this migration can write, plus the keys needed to identify a row
+// and to rebuild an identity link. Restoring these is sufficient for every
+// rollback in this plan, because rollback updates existing rows by id rather
+// than recreating them.
+//
+// This is not only the foreign keys: Task 1.4's seeder also diffs and overwrites
+// the presentation fields on Course and Unit, so those have to be here too or an
+// admin's customised colour or exam weighting could not be restored.
+//
+// Transitional fields (student_email, course_code, tutor_email, user_id) are
+// listed before they exist; `pick` simply skips whatever is absent.
+const FK_FIELDS: Record<string, string[]> = {
+  Course: ['id', 'code', 'name', 'color', 'icon', 'description', 'order'],
+  Unit: ['id', 'course_id', 'course_code', 'unit_number', 'title', 'exam_weight_min', 'exam_weight_max', 'order'],
+  Topic: ['id', 'course_id', 'course_code', 'unit_id', 'topic_number', 'title'],
+  Question: ['id', 'course_id', 'course_code', 'unit_id', 'topic_id'],
+  Enrollment: ['id', 'student_id', 'student_email', 'course_id', 'course_code', 'created_by_id'],
+  Progress: ['id', 'student_id', 'student_email', 'course_id', 'course_code', 'unit_id', 'topic_id', 'created_by_id'],
+  Exam: ['id', 'student_id', 'student_email', 'course_id', 'course_code', 'unit_id', 'created_by_id'],
+  TutoringSession: ['id', 'student_id', 'student_email', 'tutor_id', 'tutor_email', 'course_id', 'course_code', 'created_by_id'],
+  Payment: ['id', 'email', 'user_id', 'plan_id'],
+  User: ['id', 'email', 'full_name', 'role'],
+};
+
+// User is never exported in full, even in full mode: nothing in this migration
+// needs more than the identity link, and the rest is personal data.
+const USER_FIELDS = FK_FIELDS.User;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
@@ -500,6 +566,14 @@ async function listAll(api: any): Promise<any[]> {
     // If the platform ever clamps the page size below PAGE, advancing by PAGE
     // would silently skip the unreturned rows; this cannot.
     skip += page.length;
+  }
+  return out;
+}
+
+function pick(row: any, fields: string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (row[field] !== undefined) out[field] = row[field];
   }
   return out;
 }
@@ -512,17 +586,57 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    const body = await req.json().catch(() => ({}));
+
+    // Both knobs are validated strictly and fail loudly. A typo must never
+    // quietly produce a smaller backup than the caller believes they asked for —
+    // this file is the only way back from Task 2.6.
+    if (body?.mode !== undefined && body.mode !== 'fk' && body.mode !== 'full') {
+      return Response.json(
+        { error: `Unknown mode ${JSON.stringify(body.mode)}. Valid modes: fk, full.` },
+        { status: 400 },
+      );
+    }
+    const mode = body?.mode === 'full' ? 'full' : 'fk';
+
+    if (body?.entities !== undefined && !Array.isArray(body.entities)) {
+      return Response.json(
+        { error: 'entities must be an array of entity names.' },
+        { status: 400 },
+      );
+    }
+    const unknown = (body?.entities ?? []).filter((name: string) => !ALL_ENTITIES.includes(name));
+    if (unknown.length > 0) {
+      return Response.json(
+        {
+          error: `Unknown entities: ${unknown.join(', ')}. Valid names: ${ALL_ENTITIES.join(', ')}`,
+        },
+        { status: 400 },
+      );
+    }
+    const requested: string[] =
+      Array.isArray(body?.entities) && body.entities.length > 0 ? body.entities : ALL_ENTITIES;
+
     const svc = base44.asServiceRole.entities;
     const data: Record<string, any[]> = {};
-    for (const name of ENTITIES) data[name] = await listAll(svc[name]);
-
-    // Users are exported with only the fields needed to rebuild identity links.
-    data.User = (await listAll(svc.User)).map((u: any) => ({
-      id: u.id, email: u.email, full_name: u.full_name, role: u.role,
-    }));
+    // Sequential on purpose: ten concurrent full-table reads is the most likely
+    // way to exhaust the isolate's memory.
+    for (const name of requested) {
+      const rows = await listAll(svc[name]);
+      if (name === 'User') data[name] = rows.map((row: any) => pick(row, USER_FIELDS));
+      else if (mode === 'full') data[name] = rows;
+      else data[name] = rows.map((row: any) => pick(row, FK_FIELDS[name]));
+    }
 
     return Response.json({
       taken_at: new Date().toISOString(),
+      mode,
+      // Restated so a saved file is self-describing and its scope is never guessed.
+      note:
+        mode === 'fk'
+          ? 'Foreign-key fields only. Sufficient to roll back this migration, which updates rows by id. NOT a full archival backup.'
+          : 'All fields except User, which is always reduced to the identity link.',
+      entities: requested,
       counts: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v.length])),
       data,
     });
@@ -535,26 +649,45 @@ Deno.serve(async (req) => {
 
 - [ ] **Step 2: Take the snapshot and save it to disk**
 
+Take it when nobody else is using the app. The tables are read one after another, so a write that lands mid-export produces a snapshot where one table is newer than another — `taken_at` records when the export started, not a consistent database-wide instant.
+
 From the admin browser console:
 
 ```js
-const snap = await (await import("/src/api/base44Client.js")).base44.functions.invoke("exportSnapshot", {});
-const blob = new Blob([JSON.stringify(snap.data ?? snap, null, 2)], { type: "application/json" });
+const res = await (await import("/src/api/base44Client.js")).base44.functions.invoke("exportSnapshot", {});
+const snap = res.data ?? res;
+console.log(snap.mode, snap.counts);
+const blob = new Blob([JSON.stringify(snap, null, 2)], { type: "application/json" });
 const a = document.createElement("a");
 a.href = URL.createObjectURL(blob);
-a.download = `high-five-snapshot-${new Date().toISOString().slice(0, 10)}.json`;
+a.download = `high-five-snapshot-${snap.mode}-${new Date().toISOString().slice(0, 10)}.json`;
 a.click();
+```
+
+If that call fails or returns nothing, the database is too large for one response. Pull it in pieces — the files together are as good as one file:
+
+```js
+for (const name of ["Course", "Unit", "Topic", "Question", "Enrollment", "Progress", "Exam", "TutoringSession", "Payment", "User"]) {
+  const res = await (await import("/src/api/base44Client.js")).base44.functions.invoke("exportSnapshot", { entities: [name] });
+  const snap = res.data ?? res;
+  const blob = new Blob([JSON.stringify(snap, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `high-five-snapshot-${name}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  await new Promise((r) => setTimeout(r, 500));
+}
 ```
 
 - [ ] **Step 3: Verify the file**
 
-Confirm the downloaded file is non-trivial and that its `counts` match `counts` from the Task 0.2 audit exactly. Store it outside the repo (it contains user emails — do **not** commit it). Add a guard:
+Three checks, in order:
 
-In `.gitignore`, append:
+1. **Counts match the audit.** Every entry in `counts` equals the same entry in the Task 0.2 audit `counts`. A mismatch means either a write landed mid-export or pagination lost rows — re-run before trusting it.
+2. **The file parses.** Re-open the saved file and confirm it is valid JSON. A response truncated in transit would already have thrown a parse error inside `invoke`, so the risk here is a bad file write rather than a bad response; either way, a file that will not parse is not a backup.
+3. **Spot-check one row.** Open the file and confirm an `Enrollment` row has a real `id` and a populated `student_id`. If `student_id` is empty across the board, the export picked the wrong fields and the rollback path is worthless. If you are re-taking this snapshot later in the migration (Task 2.6 Step 3 asks you to), check that `student_email` and `course_code` are populated too — after Task 2.3 those are the fields that let you rebuild without the file at all, so a snapshot missing them is far less useful than it looks.
 
-```
-high-five-snapshot-*.json
-```
+Store the file outside the repository — it contains user emails, so it must never be committed. `.gitignore` already ignores `high-five-snapshot-*.json`; the entry was added ahead of this task so the guard exists before the first snapshot does.
 
 - [ ] **Step 4: Commit**
 
@@ -1109,11 +1242,20 @@ import { CATALOG } from './catalog.ts';
 import { planCourseUpserts, planUnitUpserts } from './planner.ts';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 const WRITE_BATCH = 100;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
@@ -1235,11 +1377,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { CATALOG, expandCatalog } from '../seedCatalog/catalog.ts';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 const WRITE_BATCH = 100;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
@@ -1402,7 +1553,8 @@ git commit -m "fix: make topic seeder idempotent and drop duplicated catalog"
 Create `src/lib/fetchAll.js`:
 
 ```js
-const PAGE = 5000; // Base44's maximum rows per request
+const PAGE_SIZE = 5000; // Base44's maximum rows per request
+const MAX_REQUESTS = 1000;
 
 /**
  * Reads an entire entity table. Base44's list() defaults to 50 rows and caps
@@ -1410,12 +1562,17 @@ const PAGE = 5000; // Base44's maximum rows per request
  */
 export async function fetchAll(entity, sort = "-created_date") {
   const rows = [];
-  for (let skip = 0; ; ) {
-    const page = await entity.list(sort, PAGE, skip);
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` would
+    // otherwise spin forever and hang the tab.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(`fetchAll exceeded ${MAX_REQUESTS} requests after ${rows.length} rows`);
+    }
+    const page = await entity.list(sort, PAGE_SIZE, skip);
     if (page.length === 0) break;
     rows.push(...page);
     // Advance by what the server actually returned, never by what we asked for,
-    // so a server-side page clamp below PAGE cannot silently skip rows.
+    // so a server-side page clamp below PAGE_SIZE cannot silently skip rows.
     skip += page.length;
   }
   return rows;
@@ -1666,13 +1823,22 @@ Create `base44/functions/backfillLegacyNames/entry.ts`:
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 const BULK = 500;
 
 const TABLES = ['Enrollment', 'Progress', 'Exam', 'TutoringSession'] as const;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
@@ -2137,6 +2303,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { planCourseIdUpdates, planUserIdUpdates, type PlanReport } from './planner.ts';
 
 const PAGE = 5000;
+const MAX_REQUESTS = 1000;
 const BULK = 500;
 
 const COURSE_TABLES = [
@@ -2146,7 +2313,15 @@ const STUDENT_TABLES = ['Enrollment', 'Progress', 'Exam', 'TutoringSession'] as 
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; ) {
+  for (let skip = 0, requests = 0; ; ) {
+    // The loop stops on an empty page, so a backend that ignored `skip` and kept
+    // returning the same page would grow `out` until the isolate died. At 5000
+    // rows a page this ceiling still allows five million rows per table.
+    if (++requests > MAX_REQUESTS) {
+      throw new Error(
+        `listAll exceeded ${MAX_REQUESTS} requests after ${out.length} rows; the backend is probably ignoring skip`,
+      );
+    }
     const page = await api.list('created_date', PAGE, skip);
     if (page.length === 0) break;
     out.push(...page);
