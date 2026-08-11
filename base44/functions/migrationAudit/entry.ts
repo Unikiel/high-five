@@ -4,10 +4,14 @@ const PAGE = 5000;
 
 async function listAll(api: any): Promise<any[]> {
   const out: any[] = [];
-  for (let skip = 0; ; skip += PAGE) {
+  for (let skip = 0; ; ) {
     const page = await api.list('created_date', PAGE, skip);
+    if (page.length === 0) break;
     out.push(...page);
-    if (page.length < PAGE) break;
+    // Advance by what the server actually returned, never by what we asked for.
+    // If the platform ever clamps the page size below PAGE, advancing by PAGE
+    // would silently skip the unreturned rows; this cannot.
+    skip += page.length;
   }
   return out;
 }
@@ -55,6 +59,11 @@ Deno.serve(async (req) => {
     const userEmails = new Set(
       users.map((u: any) => String(u.email || '').trim().toLowerCase()).filter(Boolean),
     );
+    const userIdByEmail = new Map<string, string>(
+      users
+        .filter((u: any) => u.email)
+        .map((u: any) => [String(u.email).trim().toLowerCase(), u.id]),
+    );
 
     const duplicateCodes = Object.entries(
       courses.reduce((acc: Record<string, number>, c: any) => {
@@ -67,8 +76,10 @@ Deno.serve(async (req) => {
     const studentFk: Record<string, Record<string, number>> = {};
     const orphanEmails = new Set<string>();
     const orphanCodes = new Set<string>();
-    let createdByIdMissing = 0;
-    let createdByIdDisagrees = 0;
+    const createdBy: Record<
+      string,
+      { rows: number; missing: number; qualifying: number; disagrees: number }
+    > = {};
 
     const courseTables: Array<[string, any[]]> = [
       ['Unit', units], ['Topic', topics], ['Question', questions],
@@ -91,24 +102,38 @@ Deno.serve(async (req) => {
     ];
     for (const [name, rows] of studentTables) {
       const t = tally();
+      const cb = { rows: rows.length, missing: 0, qualifying: 0, disagrees: 0 };
       for (const row of rows) {
         const kind = classifyUser(row.student_id, userIds);
         t[kind]++;
         const email = String(row.student_id || '').trim().toLowerCase();
         if (kind === 'email' && !userEmails.has(email)) orphanEmails.add(email);
-        if (!row.created_by_id) createdByIdMissing++;
-        else if (kind === 'email' && userEmails.has(email)) {
-          const expected = users.find(
-            (u: any) => String(u.email || '').trim().toLowerCase() === email,
-          );
-          if (expected && expected.id !== row.created_by_id) createdByIdDisagrees++;
+        if (!row.created_by_id) {
+          cb.missing++;
+        } else if (kind === 'email' && userEmails.has(email)) {
+          // Only rows in this subset can prove or disprove agreement, so the
+          // count is reported alongside the disagreements as its denominator.
+          cb.qualifying++;
+          if (userIdByEmail.get(email) !== row.created_by_id) cb.disagrees++;
         }
       }
       studentFk[name] = t;
+      createdBy[name] = cb;
     }
 
     const tutorFk = tally();
     for (const row of sessions) tutorFk[classifyUser(row.tutor_id, userIds)]++;
+
+    const paymentOrphanEmails = new Set<string>();
+    let paymentsWithoutEmail = 0;
+    for (const payment of payments) {
+      const email = String(payment.email || '').trim().toLowerCase();
+      if (!email) {
+        paymentsWithoutEmail++;
+        continue;
+      }
+      if (!userEmails.has(email)) paymentOrphanEmails.add(email);
+    }
 
     return Response.json({
       counts: {
@@ -129,8 +154,16 @@ Deno.serve(async (req) => {
         emails_with_no_user: [...orphanEmails].sort(),
         course_values_matching_no_course: [...orphanCodes].sort(),
       },
-      created_by_id: { missing: createdByIdMissing, disagrees_with_email: createdByIdDisagrees },
-      payments_without_user_link: payments.filter((p: any) => !p.user_id).length,
+      created_by_id: createdBy,
+      payments: {
+        total: payments.length,
+        // Payment has no user_id field until a later migration task adds it, so
+        // before that point this necessarily equals total. It becomes meaningful
+        // only once that field is backfilled.
+        without_user_id: payments.filter((p: any) => !p.user_id).length,
+        without_email: paymentsWithoutEmail,
+        emails_matching_no_user: [...paymentOrphanEmails].sort(),
+      },
     });
   } catch (error) {
     console.error('migrationAudit error', error);
