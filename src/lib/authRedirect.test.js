@@ -12,10 +12,18 @@ describe("resolvePostAuthPath", () => {
     expect(resolvePostAuthPath(location)).toBe("/courses?q=1#top");
   });
 
+  it("omits search and hash when they are absent", () => {
+    expect(resolvePostAuthPath({ state: { from: { pathname: "/courses" } } })).toBe("/courses");
+  });
+
   it("never bounces back to an auth route", () => {
-    for (const pathname of ["/login", "/register", "/forgot-password", "/reset-password", "/"]) {
+    for (const pathname of ["/login", "/register", "/forgot-password", "/reset-password"]) {
       expect(resolvePostAuthPath({ state: { from: { pathname } } })).toBe(AUTHED_HOME);
     }
+  });
+
+  it("sends the site root to the authed home", () => {
+    expect(resolvePostAuthPath({ state: { from: { pathname: "/" } } })).toBe(AUTHED_HOME);
   });
 
   it("rejects protocol-relative and non-absolute paths", () => {

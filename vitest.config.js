@@ -1,12 +1,15 @@
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+    // Keep in sync with the "@/*" path mapping in jsconfig.json.
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   test: {
+    // Every module under test is pure, so jsdom is unnecessary. A future
+    // component test needs jsdom and @vitejs/plugin-react added first.
     environment: "node",
-    include: ["src/**/*.test.{js,jsx}", "base44/**/*.test.ts"],
+    include: ["src/**/*.{test,spec}.{js,jsx,ts,tsx}", "base44/**/*.{test,spec}.ts"],
   },
 });
