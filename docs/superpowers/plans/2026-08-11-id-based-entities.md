@@ -803,10 +803,19 @@ One copy of the static catalog, owned by the seeder. It is seed data, not runtim
 
 **Files:**
 - Create: `base44/functions/seedCatalog/catalog.ts`
+- Create: `base44/functions/seedCatalog/catalog.test.ts`
 
 - [ ] **Step 1: Create the module**
 
-Create `base44/functions/seedCatalog/catalog.ts`. Port the data from `base44/functions/seedCourseContent/entry.ts:3-26` (which already contains the complete 10-course set including `extends`/`extraUnits` for `AP_CALC_BC`), converting the positional unit tuples into named fields. The shape is:
+Create `base44/functions/seedCatalog/catalog.ts`. **Port from `src/lib/courseData.js`, not from the backend copy.**
+
+The two rival catalogs were diffed programmatically before this task was written. They agree exactly — same 10 codes in the same order, same names, colors, icons and descriptions, same 68 units with the same titles, and the same 524 topic strings — and differ in exactly one respect: `courseData.js:151-162` overrides seven `AP_CALC_BC` unit weights (`4-7%`, `4-7%`, `4-7%`, `6-9%`, `8-11%`, `6-9%`, `6-9%` for units 1-5, 7 and 8) which the backend copy leaves at the inherited AB values. The frontend values are the correct AP ones.
+
+That makes `courseData.js` the better source twice over: it is already the correct data, and it is already in the named-field unit shape (`{ number, title, weight, topics }`) that this module wants, so no tuple conversion is needed.
+
+**Generate the port rather than retyping it.** 524 topic strings cannot be hand-copied reliably. Write a throwaway Node script that imports `courseData.js`, serializes `COURSES` to the `catalog.ts` source text, then delete the script. Then verify the result by diffing the generated `CATALOG` back against `courseData.js` for deep equality. Manual transcription of this volume is how silent content corruption gets introduced.
+
+The shape is:
 
 ```ts
 export interface CatalogUnit {
@@ -847,21 +856,40 @@ export const CATALOG: CatalogCourse[] = [
         topics: [
           'Introducing Calculus: Can Change Occur at an Instant?',
           'Defining Limits and Using Limit Notation',
-          // ...port every topic string verbatim from seedCourseContent/entry.ts:5
+          // ...every topic string, generated from courseData.js
         ],
       },
-      // ...units 2-8 from seedCourseContent/entry.ts:6-12
+      // ...units 2-8, generated from courseData.js
     ],
   },
-  // ...the remaining 9 courses from seedCourseContent/entry.ts:14-25
+  // ...the remaining 9 courses, generated from courseData.js
 ];
 
-/** Resolves `extends` / `extraUnits` into a flat unit list per course. */
-export function expandCatalog(catalog: CatalogCourse[] = CATALOG): Array<CatalogCourse & { units: CatalogUnit[] }> {
+/**
+ * Resolves `extends` / `extraUnits` into a flat unit list per course.
+ *
+ * Units are copied rather than aliased, because a caller that annotates an
+ * expanded unit — attaching a created Unit id, say — would otherwise reach
+ * through the shared reference and mutate the parent course's unit too.
+ *
+ * `extends` and `extraUnits` are dropped from the result so that a caller
+ * building a Base44 create payload cannot accidentally forward them as stray
+ * fields.
+ */
+export function expandCatalog(
+  catalog: CatalogCourse[] = CATALOG,
+): Array<Omit<CatalogCourse, 'extends' | 'extraUnits'> & { units: CatalogUnit[] }> {
   const byCode = new Map(catalog.map((c) => [c.code, c]));
   return catalog.map((course) => {
     const inherited = course.extends ? (byCode.get(course.extends)?.units ?? []) : [];
-    return { ...course, units: [...inherited, ...(course.units ?? []), ...(course.extraUnits ?? [])] };
+    const { extends: _inheritsFrom, extraUnits, units, ...rest } = course;
+    return {
+      ...rest,
+      units: [...inherited, ...(units ?? []), ...(extraUnits ?? [])].map((unit) => ({
+        ...unit,
+        topics: [...unit.topics],
+      })),
+    };
   });
 }
 
@@ -875,9 +903,11 @@ export function parseWeight(weight: string): { min?: number; max?: number } {
 ```
 
 **Porting rules — follow exactly:**
-- Copy every topic string character-for-character. `AP_CALC_BC` keeps `extends: 'AP_CALC_AB'` plus its two `extraUnits`. Note that `src/lib/courseData.js:151-162` overrides the inherited AB weights for BC (`4-7%`, `4-7%`, `4-7%`, `6-9%`, `8-11%`, `17-20%`, `6-9%`, `6-9%`) — the backend copy at `seedCourseContent/entry.ts:14` does **not**. Use the frontend's BC weights; they are the correct AP values. Express this by giving `AP_CALC_BC` explicit `units` copied from AB with corrected weights rather than using `extends`.
-- Assign `order` 1-10 following the array order in `src/lib/courseData.js`: `AP_CALC_AB`, `AP_CALC_BC`, `AP_PHYSICS_1`, `AP_PHYSICS_2`, `AP_PHYSICS_CM`, `AP_PHYSICS_CE`, `AP_CSP`, `AP_CSA`, `AP_STATS`, `AP_PRECALC`.
+- Every course gets explicit `units`, including `AP_CALC_BC`, because `courseData.js` has already resolved BC's inheritance into a flat list with corrected weights. No course uses `extends` or `extraUnits` as a result. Those two fields and `expandCatalog` are kept anyway: later tasks call `expandCatalog` as their accessor, and keeping the seam means adding an inheriting course later does not require touching the seeder.
+- Assign `order` 1-10 following the array order in `courseData.js`: `AP_CALC_AB`, `AP_CALC_BC`, `AP_PHYSICS_1`, `AP_PHYSICS_2`, `AP_PHYSICS_CM`, `AP_PHYSICS_CE`, `AP_CSP`, `AP_CSA`, `AP_STATS`, `AP_PRECALC`. This is the only field not present in the source, so it is the only one typed by hand.
 - Do not include `exam_date`; admins set it per year in the UI.
+- Unit numbers are deliberately **not** contiguous from 1 across all courses. `AP_PHYSICS_2` starts at unit 9, `AP_PHYSICS_CE` starts at unit 8, and `AP_CALC_BC` runs 1-10. Preserve the source numbers exactly; do not renumber.
+- `AP_PRECALC` unit 4 has weight `'Not assessed'`, which `parseWeight` maps to `{}`. Keep the string as-is.
 
 - [ ] **Step 2: Write a test that pins the catalog shape**
 
@@ -891,6 +921,35 @@ describe('CATALOG', () => {
   it('has 10 courses with unique codes', () => {
     expect(CATALOG).toHaveLength(10);
     expect(new Set(CATALOG.map((c) => c.code)).size).toBe(10);
+  });
+
+  // These totals were measured from src/lib/courseData.js at port time. They are
+  // pinned rather than derived so that content silently disappearing during a
+  // later edit fails here instead of surfacing as missing lessons in the app.
+  it('still contains every unit and topic that was ported', () => {
+    const courses = expandCatalog();
+    const units = courses.reduce((n, c) => n + c.units.length, 0);
+    const topics = courses.reduce(
+      (n, c) => n + c.units.reduce((m, u) => m + u.topics.length, 0),
+      0,
+    );
+    expect(units).toBe(68);
+    expect(topics).toBe(524);
+  });
+
+  it('keeps the corrected AP Calculus BC exam weights', () => {
+    const bc = expandCatalog().find((c) => c.code === 'AP_CALC_BC');
+    expect(bc?.units.map((u) => u.weight)).toEqual([
+      '4-7%', '4-7%', '4-7%', '6-9%', '8-11%', '17-20%', '6-9%', '6-9%',
+      '11-12%', '17-18%',
+    ]);
+  });
+
+  it('preserves the source unit numbering, which does not start at 1 everywhere', () => {
+    const byCode = new Map(expandCatalog().map((c) => [c.code, c.units.map((u) => u.number)]));
+    expect(byCode.get('AP_PHYSICS_2')?.[0]).toBe(9);
+    expect(byCode.get('AP_PHYSICS_CE')?.[0]).toBe(8);
+    expect(byCode.get('AP_CALC_BC')).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
   it('gives every course at least one unit after expansion', () => {
@@ -915,6 +974,51 @@ describe('CATALOG', () => {
   });
 });
 
+// No course in CATALOG uses `extends`, so without these the inheritance branch
+// would ship with zero coverage and Task 1.4 would be the first thing to run it.
+describe('expandCatalog inheritance', () => {
+  const parent: CatalogCourse = {
+    code: 'PARENT',
+    name: 'Parent',
+    color: '#000000',
+    icon: 'PA',
+    description: 'parent course',
+    order: 1,
+    units: [{ number: 1, title: 'Shared', weight: '10%', topics: ['alpha'] }],
+  };
+  const child: CatalogCourse = {
+    code: 'CHILD',
+    name: 'Child',
+    color: '#111111',
+    icon: 'CH',
+    description: 'child course',
+    order: 2,
+    extends: 'PARENT',
+    extraUnits: [{ number: 2, title: 'Extra', weight: '20%', topics: ['beta'] }],
+  };
+
+  it('puts inherited units before the extra ones', () => {
+    const expanded = expandCatalog([parent, child]).find((c) => c.code === 'CHILD');
+    expect(expanded?.units.map((u) => u.title)).toEqual(['Shared', 'Extra']);
+  });
+
+  it('copies inherited units instead of aliasing the parent', () => {
+    const expanded = expandCatalog([parent, child]);
+    const inherited = expanded.find((c) => c.code === 'CHILD')!.units[0];
+    inherited.title = 'Mutated';
+    inherited.topics.push('injected');
+
+    expect(parent.units![0].title).toBe('Shared');
+    expect(parent.units![0].topics).toEqual(['alpha']);
+  });
+
+  it('drops extends and extraUnits so they cannot leak into a create payload', () => {
+    const expanded = expandCatalog([parent, child]).find((c) => c.code === 'CHILD');
+    expect(expanded).not.toHaveProperty('extends');
+    expect(expanded).not.toHaveProperty('extraUnits');
+  });
+});
+
 describe('parseWeight', () => {
   it('parses a range', () => expect(parseWeight('10-12%')).toEqual({ min: 10, max: 12 }));
   it('parses a single value', () => expect(parseWeight('17%')).toEqual({ min: 17, max: 17 }));
@@ -922,19 +1026,27 @@ describe('parseWeight', () => {
 });
 ```
 
-- [ ] **Step 3: Run the tests**
+Note the import line needs the type as well: `import { CATALOG, type CatalogCourse, expandCatalog, parseWeight } from './catalog.ts';`
+
+- [ ] **Step 3: Verify the port against its source, once**
+
+The pinned totals above catch later drift but would not catch a mistake made during the port itself, because they were measured from the same run that produced the file. So before committing, prove the generated catalog equals `courseData.js` field for field with a throwaway script: for each course compare `code`, `name`, `color`, `icon` and `description`, and for each unit compare `number`, `title`, `weight` and the full `topics` array. It must report zero differences.
+
+This check is deliberately **not** kept as a permanent test. `courseData.js` is deleted in Task 3.5, and a committed test importing it would have to be deleted at exactly that moment — the pinned totals are the durable guard instead. Delete the script once it reports clean.
+
+- [ ] **Step 4: Run the tests**
 
 ```bash
 npm test -- base44/functions/seedCatalog
 ```
 
-Expected: all 7 assertions PASS. `AP_CALC_BC` having 10 units is the check that catches a botched port.
+Expected: all 13 assertions PASS (7 on `CATALOG`, 3 on inheritance, 3 on `parseWeight`). The pinned 68-unit / 524-topic totals and the `AP_CALC_BC` weight list are the checks that catch a botched port.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add base44/functions/seedCatalog/catalog.ts base44/functions/seedCatalog/catalog.test.ts
-git commit -m "feat: add canonical course catalog as seed data"
+git commit -m "feat: add canonical seed catalog ported from the frontend course data"
 ```
 
 ## Task 1.3: Seed planner (pure, tested)
@@ -1065,6 +1177,9 @@ export interface CoursePlan {
   duplicateCodes: string[];
 }
 
+// Payloads below name every field explicitly and never spread an expanded
+// course. An expanded course still carries `units`, which Base44 has no column
+// for, so spreading it would send a junk field on every create.
 const COURSE_FIELDS = ['name', 'color', 'icon', 'description', 'order'] as const;
 
 export function planCourseUpserts(
@@ -1206,11 +1321,15 @@ Create `tsconfig.base44.json`:
 
 Note the `include` list deliberately excludes `entry.ts`. Those files import `npm:@base44/sdk@0.8.25` and call `Deno.serve`, neither of which `tsc` can resolve — attempting to check them produces a wall of unfixable errors.
 
-Then in `package.json`, change the `typecheck` script to run both projects:
+Then in `package.json`, add a **separate** script rather than chaining onto `typecheck`:
 
 ```json
-    "typecheck": "tsc -p ./jsconfig.json && tsc -p ./tsconfig.base44.json",
+    "typecheck:base44": "tsc -p ./tsconfig.base44.json",
 ```
+
+Chaining was the original instruction and it is the wrong call here. `npm run typecheck` currently exits 2 with roughly 450 pre-existing errors from `src/` and `node_modules/react-katex`, so a chained command can never go green and the new check would be invisible inside the noise. As its own script it is a real gate that passes today and fails only when someone breaks it.
+
+This step landed early, during Task 1.2, because that task needed the strict check to verify `catalog.ts`. If `tsconfig.base44.json` and the script already exist, confirm they match the above and move on.
 
 Run it:
 

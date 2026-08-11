@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CATALOG, expandCatalog, parseWeight } from './catalog.ts';
+import { CATALOG, type CatalogCourse, expandCatalog, parseWeight } from './catalog.ts';
 
 describe('CATALOG', () => {
   it('has 10 courses with unique codes', () => {
@@ -55,6 +55,51 @@ describe('CATALOG', () => {
       const numbers = course.units.map((u) => u.number);
       expect(new Set(numbers).size, `${course.code} has duplicate unit numbers`).toBe(numbers.length);
     }
+  });
+});
+
+// No course in CATALOG uses `extends`, so without these the inheritance branch
+// would ship with zero coverage and Task 1.4 would be the first thing to run it.
+describe('expandCatalog inheritance', () => {
+  const parent: CatalogCourse = {
+    code: 'PARENT',
+    name: 'Parent',
+    color: '#000000',
+    icon: 'PA',
+    description: 'parent course',
+    order: 1,
+    units: [{ number: 1, title: 'Shared', weight: '10%', topics: ['alpha'] }],
+  };
+  const child: CatalogCourse = {
+    code: 'CHILD',
+    name: 'Child',
+    color: '#111111',
+    icon: 'CH',
+    description: 'child course',
+    order: 2,
+    extends: 'PARENT',
+    extraUnits: [{ number: 2, title: 'Extra', weight: '20%', topics: ['beta'] }],
+  };
+
+  it('puts inherited units before the extra ones', () => {
+    const expanded = expandCatalog([parent, child]).find((c) => c.code === 'CHILD');
+    expect(expanded?.units.map((u) => u.title)).toEqual(['Shared', 'Extra']);
+  });
+
+  it('copies inherited units instead of aliasing the parent', () => {
+    const expanded = expandCatalog([parent, child]);
+    const inherited = expanded.find((c) => c.code === 'CHILD')!.units[0];
+    inherited.title = 'Mutated';
+    inherited.topics.push('injected');
+
+    expect(parent.units![0].title).toBe('Shared');
+    expect(parent.units![0].topics).toEqual(['alpha']);
+  });
+
+  it('drops extends and extraUnits so they cannot leak into a create payload', () => {
+    const expanded = expandCatalog([parent, child]).find((c) => c.code === 'CHILD');
+    expect(expanded).not.toHaveProperty('extends');
+    expect(expanded).not.toHaveProperty('extraUnits');
   });
 });
 

@@ -1135,16 +1135,30 @@ export const CATALOG: CatalogCourse[] = [
   },
 ];
 
-/** Resolves `extends` / `extraUnits` into a flat unit list per course. */
+/**
+ * Resolves `extends` / `extraUnits` into a flat unit list per course.
+ *
+ * Units are copied rather than aliased, because a caller that annotates an
+ * expanded unit — attaching a created Unit id, say — would otherwise reach
+ * through the shared reference and mutate the parent course's unit too.
+ *
+ * `extends` and `extraUnits` are dropped from the result so that a caller
+ * building a Base44 create payload cannot accidentally forward them as stray
+ * fields.
+ */
 export function expandCatalog(
   catalog: CatalogCourse[] = CATALOG,
-): Array<CatalogCourse & { units: CatalogUnit[] }> {
+): Array<Omit<CatalogCourse, 'extends' | 'extraUnits'> & { units: CatalogUnit[] }> {
   const byCode = new Map(catalog.map((c) => [c.code, c]));
   return catalog.map((course) => {
     const inherited = course.extends ? (byCode.get(course.extends)?.units ?? []) : [];
+    const { extends: _inheritsFrom, extraUnits, units, ...rest } = course;
     return {
-      ...course,
-      units: [...inherited, ...(course.units ?? []), ...(course.extraUnits ?? [])],
+      ...rest,
+      units: [...inherited, ...(units ?? []), ...(extraUnits ?? [])].map((unit) => ({
+        ...unit,
+        topics: [...unit.topics],
+      })),
     };
   });
 }
