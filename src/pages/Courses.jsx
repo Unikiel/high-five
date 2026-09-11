@@ -38,7 +38,9 @@ export default function Courses() {
     try {
       await base44.entities.Enrollment.create({
         student_id: user?.email,
+        student_email: user?.email,
         course_id: courseCode,
+        course_code: courseCode,
         enrolled_at: new Date().toISOString(),
       });
       loadData();

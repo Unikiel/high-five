@@ -66,7 +66,9 @@ export default function Practice() {
       }
       const exam = await base44.entities.Exam.create({
         student_id: user?.email,
+        student_email: user?.email,
         course_id: selectedCourse,
+        course_code: selectedCourse,
         unit_id: unitId,
         title: `${course?.name} - ${examType?.label}`,
         type: selectedType === "full" ? "full" : selectedType === "unit" ? "unit" : "practice",

@@ -70,14 +70,16 @@ export default function Tutoring() {
     try {
       await base44.entities.TutoringSession.create({
         student_id: user?.email,
-        tutor_id: form.tutor_id || "pending",
+        student_email: user?.email,
+        ...(form.tutor_id ? { tutor_id: form.tutor_id, tutor_email: form.tutor_id } : {}),
         course_id: form.course_id,
+        course_code: form.course_id,
         scheduled_date: form.scheduled_date,
         scheduled_time: form.scheduled_time,
         end_time: form.end_time,
         duration_minutes: durationMinutes,
         notes: form.notes,
-        status: "pending"
+        status: "pending",
       });
       setOpen(false);
       setForm({ course_id: "", scheduled_date: "", scheduled_time: "", end_time: "", notes: "", tutor_id: "" });
@@ -115,9 +117,9 @@ export default function Tutoring() {
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(session.scheduled_date).toLocaleDateString()}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""} ({session.duration_minutes} min)</span>
-              {session.tutor_id && session.tutor_id !== "pending" && (
-                <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === session.tutor_id); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
-              )}
+              {session.tutor_id ? (
+                <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === (session.tutor_email || session.tutor_id)); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
+              ) : null}
             </div>
             {session.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{session.notes}</p>}
           </div>

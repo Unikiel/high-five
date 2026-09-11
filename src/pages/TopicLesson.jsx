@@ -102,7 +102,9 @@ export default function TopicLesson() {
       } else {
         await base44.entities.Progress.create({
           student_id: user?.email,
+          student_email: user?.email,
           course_id: courseCode,
+          course_code: courseCode,
           unit_id: topic?.unit_id,
           topic_id: topicId,
           status: "completed",
