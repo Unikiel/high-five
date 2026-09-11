@@ -1,0 +1,16 @@
+{
+  "name": "AppConfig",
+  "type": "object",
+  "properties": {
+    "require_invitation": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, only emails with a pending Invitation may sign up"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "ISO timestamp of last config change"
+    }
+  },
+  "required": []
+}

@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/lib/ThemeContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { RootRedirect, RequireGuest, RedirectToLogin } from "@/components/AuthGates";
+import InviteAccessGuard from "@/components/InviteAccessGuard";
 
 // Pages
 import Landing from "@/pages/Landing";
@@ -25,6 +26,7 @@ import Settings from "@/pages/Settings";
 // Admin Pages
 import AdminOverview from "@/pages/admin/AdminOverview";
 import AdminStudents from "@/pages/admin/AdminStudents";
+import AdminStudentDetail from "@/pages/admin/AdminStudentDetail";
 import AdminReports from "@/pages/admin/AdminReports";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminBilling from "@/pages/admin/AdminBilling";
@@ -60,51 +62,54 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
-      {/* Entry point: never the marketing page — either the app or the login form */}
-      <Route path="/" element={<RootRedirect />} />
+    <InviteAccessGuard>
+      <Routes>
+        {/* Entry point: never the marketing page — either the app or the login form */}
+        <Route path="/" element={<RootRedirect />} />
 
-      {/* Public routes */}
-      <Route path="/welcome" element={<Landing />} />
-      <Route path="/pricing" element={<Pricing />} />
+        {/* Public routes */}
+        <Route path="/welcome" element={<Landing />} />
+        <Route path="/pricing" element={<Pricing />} />
 
-      {/* Auth routes, closed to users who are already signed in */}
-      <Route element={<RequireGuest />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Route>
-
-      {/* Reachable while signed in, so password reset links from email always work */}
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-
-      {/* Protected student + staff routes */}
-      <Route element={<ProtectedRoute unauthenticatedElement={<RedirectToLogin />} />}>
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:courseCode" element={<CourseDetail />} />
-          <Route path="/courses/:courseCode/topic/:topicId" element={<TopicLesson />} />
-          <Route path="/practice" element={<Practice />} />
-          <Route path="/practice/exam/:examId" element={<PracticeExam />} />
-          <Route path="/progress" element={<ProgressPage />} />
-          <Route path="/tutoring" element={<Tutoring />} />
-          <Route path="/settings" element={<Settings />} />
-
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminOverview />} />
-          <Route path="/admin/students" element={<AdminStudents />} />
-          <Route path="/admin/courses" element={<AdminCourses />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
-          <Route path="/admin/sessions" element={<AdminSessions />} />
-          <Route path="/admin/billing" element={<AdminBilling />} />
-          <Route path="/admin/roles" element={<AdminRoles />} />
-          <Route path="/admin/security" element={<AdminSecurity />} />
+        {/* Auth routes, closed to users who are already signed in */}
+        <Route element={<RequireGuest />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Route>
-      </Route>
 
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        {/* Reachable while signed in, so password reset links from email always work */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Protected student + staff routes */}
+        <Route element={<ProtectedRoute unauthenticatedElement={<RedirectToLogin />} />}>
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:courseCode" element={<CourseDetail />} />
+            <Route path="/courses/:courseCode/topic/:topicId" element={<TopicLesson />} />
+            <Route path="/practice" element={<Practice />} />
+            <Route path="/practice/exam/:examId" element={<PracticeExam />} />
+            <Route path="/progress" element={<ProgressPage />} />
+            <Route path="/tutoring" element={<Tutoring />} />
+            <Route path="/settings" element={<Settings />} />
+
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminOverview />} />
+            <Route path="/admin/students" element={<AdminStudents />} />
+            <Route path="/admin/students/:studentEmail" element={<AdminStudentDetail />} />
+            <Route path="/admin/courses" element={<AdminCourses />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/sessions" element={<AdminSessions />} />
+            <Route path="/admin/billing" element={<AdminBilling />} />
+            <Route path="/admin/roles" element={<AdminRoles />} />
+            <Route path="/admin/security" element={<AdminSecurity />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </InviteAccessGuard>
   );
 };
 

@@ -6,11 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 import { base44 } from "@/api/base44Client";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
-
-const LOGO_URL = "https://media.base44.com/images/public/6a0b3929bdfa692726f9ff18/74b6eb74e_image.png";
+import { useAppConfig } from "@/lib/appConfig";
+import { LOGO_URL } from "@/lib/brand";
 
 export default function Landing() {
   const [currentUser, setCurrentUser] = useState(null);
+  const { data: config } = useAppConfig();
+  const inviteOnly = Boolean(config?.require_invitation);
+  const signupHref = inviteOnly ? "/login" : "/register";
+  const heroCtaLabel = currentUser
+    ? "Go to Dashboard"
+    : inviteOnly
+      ? "Sign In"
+      : "Start Free Trial";
+  const heroCtaHref = currentUser ? "/dashboard" : signupHref;
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(authed => {
@@ -61,7 +70,9 @@ export default function Landing() {
           ) : (
             <>
               <Link to="/login"><Button variant="outline" size="sm">Sign In</Button></Link>
-              <Link to="/register"><Button size="sm" className="gap-1.5"><Zap className="w-3.5 h-3.5" />Get Started</Button></Link>
+              {!inviteOnly && (
+                <Link to="/register"><Button size="sm" className="gap-1.5"><Zap className="w-3.5 h-3.5" />Get Started</Button></Link>
+              )}
             </>
           )}
         </div>
@@ -81,16 +92,17 @@ export default function Landing() {
         </p>
         <p className="text-sm sm:text-base text-muted-foreground italic mb-8 sm:mb-10">Stay consistent, stay confident.</p>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto">
-          <Link to={currentUser ? "/dashboard" : "/register"} className="w-full sm:w-auto">
+          <Link to={heroCtaHref} className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto gap-2 text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">
-              {currentUser ? "Go to Dashboard" : "Start Free Trial"} <ArrowRight className="w-4 h-4" />
+              {heroCtaLabel} <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
           <Link to="/pricing" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 h-11 sm:h-12">View Pricing</Button>
           </Link>
         </div>
-        {!currentUser && <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>}
+        {!currentUser && !inviteOnly && <p className="text-sm text-muted-foreground mt-4">7-day free trial • No credit card required</p>}
+        {!currentUser && inviteOnly && <p className="text-sm text-muted-foreground mt-4">Invitation required to join</p>}
 
         {/* Social proof avatars */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
@@ -160,9 +172,10 @@ export default function Landing() {
       <section className="px-4 sm:px-6 py-14 sm:py-20 text-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">Ready to ace your exams?</h2>
         <p className="text-sm sm:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">Join thousands of students who mastered their exams with High Five.</p>
-        <Link to={currentUser ? "/dashboard" : "/register"}>
+        <Link to={currentUser ? "/dashboard" : signupHref}>
           <Button size="lg" className="gap-2 text-base px-10 h-12">
-            <Zap className="w-4 h-4" />{currentUser ? "Continue Learning" : "Start Your Free Trial"}
+            <Zap className="w-4 h-4" />
+            {currentUser ? "Continue Learning" : inviteOnly ? "Sign In to Continue" : "Start Your Free Trial"}
           </Button>
         </Link>
       </section>

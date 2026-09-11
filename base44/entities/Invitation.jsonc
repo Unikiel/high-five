@@ -1,0 +1,40 @@
+{
+  "name": "Invitation",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Invitee email (normalized lowercase)"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "tutor",
+        "assistant",
+        "student"
+      ],
+      "default": "student"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "revoked"
+      ],
+      "default": "pending"
+    },
+    "invited_by": {
+      "type": "string",
+      "description": "Admin email who sent the invite"
+    },
+    "invited_at": {
+      "type": "string",
+      "description": "ISO timestamp when the invite was created or refreshed"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

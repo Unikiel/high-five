@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { resolvePostAuthPath } from "@/lib/authRedirect";
+import { acceptInvitation, checkInvitationAllowed, useAppConfig } from "@/lib/appConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,8 @@ import { toast } from "@/components/ui/use-toast";
 export default function Register() {
   const location = useLocation();
   const redirectPath = resolvePostAuthPath(location);
+  const { data: config, isLoading: configLoading } = useAppConfig();
+  const inviteOnly = Boolean(config?.require_invitation);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +35,14 @@ export default function Register() {
     }
     setLoading(true);
     try {
+      if (inviteOnly) {
+        const check = await checkInvitationAllowed(email);
+        if (!check.allowed) {
+          setError("This email has not been invited. Ask an admin for an invitation.");
+          setLoading(false);
+          return;
+        }
+      }
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
@@ -48,6 +59,11 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
+      }
+      try {
+        await acceptInvitation(email);
+      } catch {
+        /* non-fatal */
       }
       window.location.href = redirectPath;
     } catch (err) {
@@ -70,9 +86,150 @@ export default function Register() {
     }
   };
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
+    setError("");
+    if (inviteOnly) {
+      // Google OAuth does not reveal the email before redirect. Send users to
+      // login with a note, or require email first — we gate post-auth in AuthContext.
+      // Still allow the OAuth flow; uninvited new accounts are blocked after return.
+    }
     base44.auth.loginWithProvider("google", redirectPath);
   };
+
+  if (configLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (inviteOnly && !showOtp) {
+    return (
+      <AuthLayout
+        title="Invitation required"
+        subtitle="High Five is invite-only right now."
+        panelHeadline="Access is"
+        panelHighlight="by invitation."
+        panelBody="Ask an admin to invite your email from Admin → Roles. Once invited, come back here to create your account."
+        footer={
+          <>
+            Already invited? Enter your email below, or{" "}
+            <Link to="/login" state={location.state} className="text-primary font-medium hover:underline">
+              log in
+            </Link>
+          </>
+        }
+      >
+        {error && (
+          <div
+            role="alert"
+            className="mb-5 p-3.5 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20"
+          >
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email">Invited email</Label>
+            <div className="relative">
+              <Mail
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                autoFocus
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="hf-field pl-11 h-12 rounded-xl"
+                required
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="hf-field pl-11 h-12 rounded-xl"
+                required
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm">Confirm Password</Label>
+            <div className="relative">
+              <Lock
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                id="confirm"
+                type="password"
+                autoComplete="new-password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="hf-field pl-11 h-12 rounded-xl"
+                required
+              />
+            </div>
+          </div>
+          <Button
+            type="submit"
+            className="hf-cta w-full h-12 rounded-xl text-[15px] font-semibold"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Checking invite
+              </>
+            ) : (
+              "Create invited account"
+            )}
+          </Button>
+        </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background px-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              or
+            </span>
+          </div>
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full h-12 text-sm font-medium hover:bg-secondary hover:text-secondary-foreground"
+          onClick={handleGoogle}
+        >
+          <GoogleIcon className="w-5 h-5" />
+          Continue with Google
+        </Button>
+        <p className="text-xs text-muted-foreground text-center mt-3">
+          Google sign-up only works if that Google email was invited.
+        </p>
+      </AuthLayout>
+    );
+  }
 
   if (showOtp) {
     return (
@@ -84,7 +241,10 @@ export default function Register() {
         panelBody="Verifying your email keeps your progress, streak, and score history tied to you across every device."
       >
         {error && (
-          <div role="alert" className="mb-5 p-3.5 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
+          <div
+            role="alert"
+            className="mb-5 p-3.5 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20"
+          >
             {error}
           </div>
         )}
@@ -171,7 +331,10 @@ export default function Register() {
       </div>
 
       {error && (
-        <div role="alert" className="mb-5 p-3.5 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
+        <div
+          role="alert"
+          className="mb-5 p-3.5 rounded-xl bg-destructive/10 text-destructive text-sm border border-destructive/20"
+        >
           {error}
         </div>
       )}
@@ -180,7 +343,10 @@ export default function Register() {
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Mail
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               id="email"
               type="email"
@@ -197,7 +363,10 @@ export default function Register() {
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Lock
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               id="password"
               type="password"
@@ -213,7 +382,10 @@ export default function Register() {
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Lock
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               id="confirm"
               type="password"

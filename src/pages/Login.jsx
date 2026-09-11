@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { useAppConfig } from "@/lib/appConfig";
 
 export default function Login() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkUserAuth } = useAuth();
+  const { data: config } = useAppConfig();
+  const inviteOnly = Boolean(config?.require_invitation);
 
   // The page they were trying to reach before being sent here, or the dashboard.
   const redirectPath = resolvePostAuthPath(location);
@@ -51,16 +54,20 @@ export default function Login() {
       title="Welcome back"
       subtitle="Log in to pick up your practice where you left off."
       footer={
-        <>
-          New to High Five?{" "}
-          <Link
-            to="/register"
-            state={location.state}
-            className="text-primary font-medium hover:underline"
-          >
-            Create an account
-          </Link>
-        </>
+        inviteOnly ? (
+          <>Need an account? Ask an admin for an invitation.</>
+        ) : (
+          <>
+            New to High Five?{" "}
+            <Link
+              to="/register"
+              state={location.state}
+              className="text-primary font-medium hover:underline"
+            >
+              Create an account
+            </Link>
+          </>
+        )
       }
     >
       <Button

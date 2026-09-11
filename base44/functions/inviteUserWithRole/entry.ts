@@ -2,6 +2,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const VALID_ROLES = ['admin', 'tutor', 'assistant', 'student'];
 
+async function upsertInvitation(svc: any, email: string, role: string, invitedBy: string) {
+  const existing = await svc.Invitation.filter({ email }, '-created_date', 5);
+  const payload = {
+    email,
+    role,
+    status: 'pending',
+    invited_by: invitedBy,
+    invited_at: new Date().toISOString(),
+  };
+  if (existing?.length) {
+    return await svc.Invitation.update(existing[0].id, payload);
+  }
+  return await svc.Invitation.create(payload);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -34,6 +49,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Record in Invitation allowlist so invite-only signup can admit this email
+    let invitationRecorded = false;
+    try {
+      await upsertInvitation(
+        base44.asServiceRole.entities,
+        normalizedEmail,
+        role,
+        user.email || '',
+      );
+      invitationRecorded = true;
+    } catch (e) {
+      console.error('Invitation upsert failed', e.message);
+    }
+
     // Follow-up email stating the actual app role (the platform invite letter always says "user")
     let welcomeSent = false;
     if (roleApplied) {
@@ -51,7 +80,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ invited: true, role_applied: roleApplied, role, welcome_email_sent: welcomeSent });
+    return Response.json({
+      invited: true,
+      role_applied: roleApplied,
+      invitation_recorded: invitationRecorded,
+      role,
+      welcome_email_sent: welcomeSent,
+    });
   } catch (error) {
     console.error('inviteUserWithRole error', error);
     return Response.json({ error: error.message }, { status: 500 });

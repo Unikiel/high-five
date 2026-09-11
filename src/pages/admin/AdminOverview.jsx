@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
+import { filterStudents } from "@/lib/studentRoles";
 import BackLink from "@/components/BackLink";
 
 export default function AdminOverview() {
@@ -36,7 +37,7 @@ export default function AdminOverview() {
     setLoading(false);
   };
 
-  const students = users.filter(u => u.role === "student" || u.role === "user" || !u.role);
+  const students = filterStudents(users);
   const completedExams = exams.filter(e => e.status === "completed");
   const avgScore = completedExams.length > 0
     ? Math.round(completedExams.reduce((s, e) => s + (e.score || 0), 0) / completedExams.length)

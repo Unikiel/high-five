@@ -8,8 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MARKETING_HOME } from "@/lib/authRedirect";
 import { LOGO_URL } from "@/lib/brand";
+import { useAppConfig } from "@/lib/appConfig";
 
 export default function Pricing() {
+  const { data: config } = useAppConfig();
+  const inviteOnly = Boolean(config?.require_invitation);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkoutPlanId, setCheckoutPlanId] = useState(null);
@@ -82,7 +85,9 @@ export default function Pricing() {
         </Link>
         <div className="flex gap-3">
           <Link to="/login"><Button variant="outline" size="sm">Sign In</Button></Link>
-          <Link to="/register"><Button size="sm">Get Started</Button></Link>
+          {!inviteOnly && (
+            <Link to="/register"><Button size="sm">Get Started</Button></Link>
+          )}
         </div>
       </nav>
 
