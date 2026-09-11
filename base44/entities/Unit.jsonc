@@ -5,6 +5,10 @@
     "course_id": {
       "type": "string"
     },
+    "course_code": {
+      "type": "string",
+      "description": "TRANSITIONAL: denormalised Course.code. Never use as a join key. Removed in Milestone 4."
+    },
     "title": {
       "type": "string"
     },
