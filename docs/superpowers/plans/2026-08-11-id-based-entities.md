@@ -26,8 +26,9 @@
 | 2.1 Transitional schema fields | Done | `d3a906c` (+ Unit/Topic/Question `course_code` in 1.4) |
 | 2.2 Dual-write creates | Done | `d949cdc` |
 | 2.3 Backfill transitional fields | Code done, **not yet run against prod** | `backfillLegacyNames/entry.ts` |
-| 2.4 Switch reads (with `$or` legacy fallback) | In progress (this session) | Prefer transitional; `$or` keeps pre-backfill rows visible |
-| 2.5+ FK rewrite | Not started | **Do not run until 0.2/0.3/2.3 applied and 2.4 shipped** |
+| 2.4 Switch reads (with `$or` legacy fallback) | Done | Prefer transitional; `$or` keeps pre-backfill rows visible |
+| 2.5 FK migration planner | Done | tested pure planner |
+| 2.6 `migrateForeignKeys` entry | Code done, **not yet run against prod** | dry_run defaults true; apply only after audit+snapshot+backfill+seedCatalog |
 
 **Nothing has overwritten production `*_id` values yet.** Deploy order that keeps the site up: (1) schemas + dual-write + `$or` readers, (2) run audit+snapshot+backfill, (3) only then seedCatalog / rewrite ids.
 
