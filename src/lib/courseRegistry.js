@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
 
 export const COURSE_REGISTRY_KEY = ["courses", "registry"];
 
@@ -18,6 +17,9 @@ export function buildRegistry(courses) {
 }
 
 export async function fetchCourseRegistry() {
+  // Lazy import so unit tests of buildRegistry do not load the Base44 client
+  // (which requires `window` at module init).
+  const { base44 } = await import("@/api/base44Client");
   const courses = await base44.entities.Course.filter({ is_active: true }, "order", 200);
   return buildRegistry(courses);
 }
