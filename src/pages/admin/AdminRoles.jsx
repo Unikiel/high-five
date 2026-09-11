@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/fetchAll";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import BackLink from "@/components/BackLink";
 
@@ -94,7 +95,7 @@ export default function AdminRoles() {
       const res = await base44.functions.invoke('inviteUserWithRole', { email, role: inviteRole });
 
       // Reload final list
-      const refreshed = await base44.entities.User.list();
+      const refreshed = await fetchAll(base44.entities.User);
       setAllUsers(refreshed);
 
       if (res.data?.role_applied) {
@@ -112,10 +113,10 @@ export default function AdminRoles() {
     }
   };
 
-  const reloadUsers = () => base44.entities.User.list().then(setAllUsers).catch(() => {});
+  const reloadUsers = () => fetchAll(base44.entities.User).then(setAllUsers).catch(() => {});
 
   useEffect(() => {
-    base44.entities.User.list()
+    fetchAll(base44.entities.User)
       .then(u => { setAllUsers(u); setLoadingUsers(false); })
       .catch(() => setLoadingUsers(false));
   }, []);

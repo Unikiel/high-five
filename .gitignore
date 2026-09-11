@@ -30,3 +30,6 @@ dist-ssr
 .env
 .vite
 base44/.app.jsonc
+
+# Migration snapshots (Task 0.3) contain user emails and must never be committed
+high-five-snapshot-*.json

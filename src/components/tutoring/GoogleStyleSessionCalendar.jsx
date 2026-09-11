@@ -2,6 +2,7 @@ import { Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
+import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
 
 const STATUS_DOTS = {
   pending: "bg-yellow-500",
@@ -42,7 +43,7 @@ export default function GoogleStyleSessionCalendar({ title = "Session Calendar",
                   {daySessions
                     .sort((a, b) => (a.scheduled_time || "").localeCompare(b.scheduled_time || ""))
                     .map((session) => {
-                      const course = COURSES.find(c => c.code === session.course_id);
+                      const course = COURSES.find(c => c.code === courseCodeOf(session));
                       return (
                         <div key={session.id} className="flex gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
                           <div className="w-14 shrink-0 text-xs font-semibold text-muted-foreground pt-0.5">
@@ -50,14 +51,14 @@ export default function GoogleStyleSessionCalendar({ title = "Session Calendar",
                           </div>
                           <div className="min-w-0 flex-1 border-l-4 rounded-md bg-primary/5 px-3 py-2" style={{ borderColor: course?.color || "#4285F4" }}>
                             <div className="flex items-start justify-between gap-2">
-                              <p className="truncate text-sm font-semibold text-foreground">{course?.name || session.course_id}</p>
+                              <p className="truncate text-sm font-semibold text-foreground">{course?.name || courseCodeOf(session)}</p>
                               <span className={`mt-1 h-2 w-2 rounded-full ${STATUS_DOTS[session.status] || STATUS_DOTS.pending}`} />
                             </div>
                             <p className="mt-1 text-xs text-muted-foreground">
                               {session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""}
                             </p>
                             {showStudent && getName && (
-                              <p className="mt-1 truncate text-xs text-muted-foreground">{getName(session.student_id)}</p>
+                              <p className="mt-1 truncate text-xs text-muted-foreground">{getName(studentEmailOf(session))}</p>
                             )}
                             <Badge variant="outline" className="mt-2 h-5 text-[10px] capitalize">{session.status}</Badge>
                           </div>

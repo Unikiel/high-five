@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { Plus, Pencil, Trash2, BookOpen, X, Check } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,11 @@ export default function AdminCourses() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [codeError, setCodeError] = useState("");
 
+  // Not paginated on purpose: the catalog is about 10 courses, so list()'s 50-row
+  // default is a safe ceiling. See src/lib/fetchAll.js for tables that do need
+  // paginating.
   const loadCourses = () =>
     base44.entities.Course.list().then(c => { setCourses(c); setLoading(false); }).catch(() => setLoading(false));
 
@@ -36,27 +40,48 @@ export default function AdminCourses() {
   const openAdd = () => {
     setEditingCourse(null);
     setForm(EMPTY_FORM);
+    setCodeError("");
     setShowForm(true);
   };
 
   const openEdit = (c) => {
     setEditingCourse(c);
     setForm({ name: c.name, code: c.code, description: c.description || "", color: c.color || "#2563EB", icon: c.icon || "AB", exam_date: c.exam_date || "", is_active: c.is_active !== false });
+    setCodeError("");
     setShowForm(true);
   };
 
   const save = async () => {
     if (!form.name.trim() || !form.code.trim()) return;
+    const code = form.code.trim().toUpperCase();
+    setCodeError("");
     setSaving(true);
-    if (editingCourse) {
-      await base44.entities.Course.update(editingCourse.id, form);
-    } else {
-      await base44.entities.Course.create(form);
+    try {
+      if (editingCourse) {
+        // The code is the stable business key linking every unit, topic and
+        // enrollment, so it is never rewritten on an existing course. Because it
+        // cannot change here, there is nothing to check for duplicates.
+        const { name, description, color, icon, exam_date, is_active } = form;
+        await base44.entities.Course.update(editingCourse.id, {
+          name, description, color, icon, exam_date, is_active,
+        });
+      } else {
+        // Asked of the server rather than the `courses` array: list() returns only
+        // the first 50 rows, so an in-memory check would quietly stop catching
+        // clashes once the catalog outgrows one page.
+        const clash = await base44.entities.Course.filter({ code });
+        if (clash.length > 0) {
+          setCodeError(`Code ${code} is already used by "${clash[0].name}".`);
+          return;
+        }
+        await base44.entities.Course.create({ ...form, code });
+      }
+      await loadCourses();
+      setShowForm(false);
+      setEditingCourse(null);
+    } finally {
+      setSaving(false);
     }
-    await loadCourses();
-    setSaving(false);
-    setShowForm(false);
-    setEditingCourse(null);
   };
 
   const deleteCourse = async (id) => {
@@ -148,7 +173,18 @@ export default function AdminCourses() {
               </div>
               <div className="space-y-1.5">
                 <Label>Course Code *</Label>
-                <Input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))} placeholder="e.g. AP_CALC_AB" />
+                <Input
+                  value={form.code}
+                  onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                  placeholder="e.g. AP_CALC_AB"
+                  disabled={!!editingCourse}
+                />
+                {editingCourse && (
+                  <p className="text-xs text-muted-foreground">
+                    Course code is permanent — it links every unit, topic, and enrollment.
+                  </p>
+                )}
+                {codeError && <p className="text-xs text-destructive">{codeError}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Exam Date</Label>

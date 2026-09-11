@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/fetchAll";
 import { filterStudents } from "@/lib/studentRoles";
 import { COURSES } from "@/lib/courseData";
+import { courseCodeOf, matchesStudent } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { TrendingUp, Users, Target, Award, Clock, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,11 +51,11 @@ export default function AdminReports() {
   const filteredExams =
     selectedCourse === "all"
       ? completedExams
-      : completedExams.filter((e) => e.course_id === selectedCourse);
+      : completedExams.filter((e) => courseCodeOf(e) === selectedCourse);
 
   const enrollmentData = COURSES.map((c, i) => ({
     name: c.code.replace("AP_", ""),
-    students: enrollments.filter((e) => e.course_id === c.code).length,
+    students: enrollments.filter((e) => courseCodeOf(e) === c.code).length,
     fill: COLORS[i % COLORS.length],
   })).filter((d) => d.students > 0);
 
@@ -265,7 +266,7 @@ export default function AdminReports() {
               {(() => {
                 const studentStats = students
                   .map((s) => {
-                    const studentExams = completedExams.filter((e) => e.student_id === s.email);
+                    const studentExams = completedExams.filter((e) => matchesStudent(e, s));
                     const avg =
                       studentExams.length > 0
                         ? Math.round(

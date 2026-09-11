@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { byCourseCode } from "@/lib/legacyFields";
 import { ChevronLeft, ChevronRight, Clock, CheckCircle, AlertCircle, Flag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ export default function PracticeExam() {
       const e = await base44.entities.Exam.filter({ id: examId });
       if (e.length > 0) {
         setExam(e[0]);
-        const questionBank = await base44.entities.Question.filter({ course_id: e[0].course_id, is_active: true }, "created_date", 2000);
+        const questionBank = await base44.entities.Question.filter({ ...byCourseCode(e[0].course_code ?? e[0].course_id), is_active: true }, "created_date", 2000);
         const filteredBank = e[0].unit_id ? questionBank.filter(q => q.unit_id === e[0].unit_id) : questionBank;
         let picked;
         if (e[0].questions?.length) {

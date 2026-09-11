@@ -5,6 +5,10 @@
     "email": {
       "type": "string"
     },
+    "user_id": {
+      "type": "string",
+      "description": "User.id of the payer, taken from the authenticated session. Set by Milestone 4."
+    },
     "plan_id": {
       "type": "string"
     },

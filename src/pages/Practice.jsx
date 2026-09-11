@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { COURSES } from "@/lib/courseData";
+import { byCourseCodeAndUnit, byStudent, courseCodeOf } from "@/lib/legacyFields";
 import { Target, Zap, BookOpen, Brain, ChevronRight, Play } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,15 +41,15 @@ export default function Practice() {
   const loadData = async () => {
     try {
       const [enr, exams] = await Promise.all([
-        base44.entities.Enrollment.filter({ student_id: user?.email }),
-        base44.entities.Exam.filter({ student_id: user?.email }, "-created_date", 10)
+        base44.entities.Enrollment.filter(byStudent(user)),
+        base44.entities.Exam.filter(byStudent(user), "-created_date", 10)
       ]);
       setEnrollments(enr);
       setRecentExams(exams);
     } catch (e) {}
   };
 
-  const enrolledCourses = COURSES.filter(c => enrollments.some(e => e.course_id === c.code));
+  const enrolledCourses = COURSES.filter(c => enrollments.some(e => courseCodeOf(e) === c.code));
   const course = COURSES.find(c => c.code === selectedCourse);
 
   const startExam = async () => {
@@ -61,12 +62,14 @@ export default function Practice() {
       const timeLimit = selectedType === "full" ? realExam.minutes : examType?.minutes;
       let unitId;
       if (selectedUnit !== "all") {
-        const matchingUnits = await base44.entities.Unit.filter({ course_id: selectedCourse, unit_number: Number(selectedUnit) });
+        const matchingUnits = await base44.entities.Unit.filter(byCourseCodeAndUnit(selectedCourse, Number(selectedUnit)));
         unitId = matchingUnits[0]?.id;
       }
       const exam = await base44.entities.Exam.create({
-        student_id: user?.email,
+        student_id: user?.id || user?.email,
+        student_email: user?.email,
         course_id: selectedCourse,
+        course_code: selectedCourse,
         unit_id: unitId,
         title: `${course?.name} - ${examType?.label}`,
         type: selectedType === "full" ? "full" : selectedType === "unit" ? "unit" : "practice",

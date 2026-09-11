@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { getCourseByCode } from "@/lib/courseData";
+import { byCourseCode, byStudentAndCourse } from "@/lib/legacyFields";
 import { ChevronRight, BookOpen, Target, TrendingUp, ChevronDown, ChevronUp, CheckCircle, Circle, Play, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,9 +35,9 @@ export default function CourseDetail() {
   const loadData = async () => {
     try {
       const [u, t, prog] = await Promise.all([
-        base44.entities.Unit.filter({ course_id: courseCode }),
-        base44.entities.Topic.filter({ course_id: courseCode }),
-        base44.entities.Progress.filter({ student_id: user?.email, course_id: courseCode })
+        base44.entities.Unit.filter(byCourseCode(courseCode)),
+        base44.entities.Topic.filter(byCourseCode(courseCode)),
+        base44.entities.Progress.filter(byStudentAndCourse(user, courseCode))
       ]);
       setUnits(u.sort((a, b) => a.unit_number - b.unit_number));
       setTopics(t);

@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/fetchAll";
 import { COURSES } from "@/lib/courseData";
+import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
 import { getDisplayName } from "@/lib/userDisplay";
 import { Calendar, CheckCircle, XCircle, Clock, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,8 +26,8 @@ export default function AdminSessions() {
   const loadData = async () => {
     try {
       const [s, u] = await Promise.all([
-        base44.entities.TutoringSession.list("-created_date"),
-        base44.entities.User.list()
+        fetchAll(base44.entities.TutoringSession, "-created_date"),
+        fetchAll(base44.entities.User)
       ]);
       setSessions(s);
       setUsers(u);
@@ -98,7 +100,7 @@ export default function AdminSessions() {
       ) : (
         <div className="space-y-4">
           {filtered.map(s => {
-            const course = COURSES.find(c => c.code === s.course_id);
+            const course = COURSES.find(c => c.code === courseCodeOf(s));
             return (
               <Card key={s.id} className="border-border/50">
                 <CardContent className="p-5">
@@ -110,9 +112,9 @@ export default function AdminSessions() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-semibold text-foreground">{course?.name || s.course_id}</h3>
+                          <h3 className="font-semibold text-foreground">{course?.name || courseCodeOf(s)}</h3>
                           <div className="flex flex-wrap gap-4 mt-1.5 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Student: {getName(s.student_id)}</span>
+                            <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Student: {getName(studentEmailOf(s))}</span>
                             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{new Date(s.scheduled_date).toLocaleDateString()}</span>
                             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{s.scheduled_time}{s.end_time ? ` - ${s.end_time}` : ""} ({s.duration_minutes} min)</span>
                           </div>

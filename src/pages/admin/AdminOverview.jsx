@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/fetchAll";
 import { Users, BookOpen, Target, Calendar, TrendingUp, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
+import { courseCodeOf, matchesStudent, studentEmailOf } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { filterStudents } from "@/lib/studentRoles";
 import BackLink from "@/components/BackLink";
@@ -24,10 +26,10 @@ export default function AdminOverview() {
   const loadData = async () => {
     try {
       const [u, e, ex, s] = await Promise.all([
-        base44.entities.User.list(),
-        base44.entities.Enrollment.list(),
-        base44.entities.Exam.list(),
-        base44.entities.TutoringSession.list()
+        fetchAll(base44.entities.User),
+        fetchAll(base44.entities.Enrollment),
+        fetchAll(base44.entities.Exam),
+        fetchAll(base44.entities.TutoringSession)
       ]);
       setUsers(u);
       setEnrollments(e);
@@ -103,7 +105,7 @@ export default function AdminOverview() {
                   <p className="text-xs text-muted-foreground truncate">{student.email}</p>
                 </div>
                 <Badge variant="secondary" className="text-xs flex-shrink-0">
-                  {enrollments.filter(e => e.student_id === student.email).length} courses
+                  {enrollments.filter(e => matchesStudent(e, student)).length} courses
                 </Badge>
               </div>
             ))}
@@ -121,7 +123,7 @@ export default function AdminOverview() {
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingSessions.slice(0, 5).map(s => {
-              const course = COURSES.find(c => c.code === s.course_id);
+              const course = COURSES.find(c => c.code === courseCodeOf(s));
               return (
                 <div key={s.id} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-display font-bold flex-shrink-0"
@@ -129,7 +131,7 @@ export default function AdminOverview() {
                     {course?.icon || "AP"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{s.student_id}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{studentEmailOf(s)}</p>
                     <p className="text-xs text-muted-foreground">{new Date(s.scheduled_date).toLocaleDateString()} · {s.scheduled_time}</p>
                   </div>
                   <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400 border-0 text-xs">Pending</Badge>
@@ -149,7 +151,7 @@ export default function AdminOverview() {
         <CardContent>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {COURSES.map(course => {
-              const count = enrollments.filter(e => e.course_id === course.code).length;
+              const count = enrollments.filter(e => courseCodeOf(e) === course.code).length;
               return (
                 <div key={course.code} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white flex-shrink-0"

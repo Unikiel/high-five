@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { byStudent } from "@/lib/legacyFields";
 import { ChevronLeft, CheckCircle, BookOpen, Lightbulb, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ export default function TopicLesson() {
         const units = await base44.entities.Unit.filter({ id: topics[0].unit_id });
         if (units.length > 0) setUnit(units[0]);
       }
-      const prog = await base44.entities.Progress.filter({ student_id: user?.email, topic_id: topicId });
+      const prog = await base44.entities.Progress.filter({ ...byStudent(user), topic_id: topicId });
       if (prog.length > 0) setProgress(prog[0]);
     } catch (e) {}
     setLoading(false);
@@ -101,8 +102,10 @@ export default function TopicLesson() {
         await base44.entities.Progress.update(progress.id, { status: "completed", mastery_score: 100 });
       } else {
         await base44.entities.Progress.create({
-          student_id: user?.email,
+          student_id: user?.id || user?.email,
+          student_email: user?.email,
           course_id: courseCode,
+          course_code: courseCode,
           unit_id: topic?.unit_id,
           topic_id: topicId,
           status: "completed",

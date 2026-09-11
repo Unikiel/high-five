@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { fetchAll } from "@/lib/fetchAll";
 import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
+import { byStudent, courseCodeOf } from "@/lib/legacyFields";
 import { Calendar, Clock, User, Plus, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,8 +45,8 @@ export default function Tutoring() {
   const loadData = async () => {
     try {
       const [s, u] = await Promise.all([
-        base44.entities.TutoringSession.filter({ student_id: user?.email }),
-        base44.entities.User.list()
+        base44.entities.TutoringSession.filter(byStudent(user)),
+        fetchAll(base44.entities.User)
       ]);
       setSessions(s.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
       setTutors(u.filter(u => u.role === "tutor" || u.role === "admin" || u.role === "assistant"));
@@ -67,16 +69,26 @@ export default function Tutoring() {
     if (!form.course_id || !form.scheduled_date || !form.scheduled_time || !form.end_time || durationMinutes <= 0) return;
     setSubmitting(true);
     try {
+      const tutor = form.tutor_id
+        ? tutors.find((t) => t.email === form.tutor_id)
+        : null;
       await base44.entities.TutoringSession.create({
-        student_id: user?.email,
-        tutor_id: form.tutor_id || "pending",
+        student_id: user?.id || user?.email,
+        student_email: user?.email,
+        ...(form.tutor_id
+          ? {
+              tutor_id: tutor?.id || form.tutor_id,
+              tutor_email: tutor?.email || form.tutor_id,
+            }
+          : {}),
         course_id: form.course_id,
+        course_code: form.course_id,
         scheduled_date: form.scheduled_date,
         scheduled_time: form.scheduled_time,
         end_time: form.end_time,
         duration_minutes: durationMinutes,
         notes: form.notes,
-        status: "pending"
+        status: "pending",
       });
       setOpen(false);
       setForm({ course_id: "", scheduled_date: "", scheduled_time: "", end_time: "", notes: "", tutor_id: "" });
@@ -96,7 +108,7 @@ export default function Tutoring() {
 
   const SessionCard = ({ session }) => {
     const { color, icon: Icon } = STATUS_CONFIG[session.status] || STATUS_CONFIG.pending;
-    const course = COURSES.find(c => c.code === session.course_id);
+    const course = COURSES.find(c => c.code === courseCodeOf(session));
     return (
       <Card className="border-border/50">
         <CardContent className="p-4 flex items-start gap-4">
@@ -106,7 +118,7 @@ export default function Tutoring() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-foreground text-sm">{course?.name || session.course_id}</h3>
+              <h3 className="font-semibold text-foreground text-sm">{course?.name || courseCodeOf(session)}</h3>
               <Badge className={`${color} border-0 text-xs flex-shrink-0`}>
                 <Icon className="w-3 h-3 mr-1" />{session.status}
               </Badge>
@@ -114,9 +126,9 @@ export default function Tutoring() {
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(session.scheduled_date).toLocaleDateString()}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{session.scheduled_time}{session.end_time ? ` - ${session.end_time}` : ""} ({session.duration_minutes} min)</span>
-              {session.tutor_id && session.tutor_id !== "pending" && (
-                <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === session.tutor_id); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
-              )}
+              {session.tutor_id ? (
+                <span className="flex items-center gap-1"><User className="w-3 h-3" />{(() => { const t = tutors.find(t => t.email === (session.tutor_email || session.tutor_id)); return t ? getDisplayName(t) : "Assigned Tutor"; })()}</span>
+              ) : null}
             </div>
             {session.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{session.notes}</p>}
           </div>
