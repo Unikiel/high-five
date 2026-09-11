@@ -5,11 +5,19 @@
     "course_id": {
       "type": "string"
     },
+    "course_code": {
+      "type": "string",
+      "description": "TRANSITIONAL: denormalised Course.code. Never use as a join key. Removed in Milestone 4."
+    },
     "unit_id": {
       "type": "string"
     },
     "student_id": {
       "type": "string"
+    },
+    "student_email": {
+      "type": "string",
+      "description": "TRANSITIONAL: the email that student_id used to hold. Removed in Milestone 4."
     },
     "title": {
       "type": "string"
