@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { fetchAll } from "@/lib/fetchAll";
 import { filterStudents } from "@/lib/studentRoles";
 import { COURSES } from "@/lib/courseData";
+import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { Search, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,13 +51,13 @@ export default function AdminStudents() {
   );
 
   const getStudentStats = (email) => {
-    const enr = enrollments.filter((e) => e.student_id === email);
-    const studentExams = exams.filter((e) => e.student_id === email && e.status === "completed");
+    const enr = enrollments.filter((e) => studentEmailOf(e) === email);
+    const studentExams = exams.filter((e) => studentEmailOf(e) === email && e.status === "completed");
     const avgScore =
       studentExams.length > 0
         ? Math.round(studentExams.reduce((s, e) => s + (e.score || 0), 0) / studentExams.length)
         : null;
-    const studentProgress = progress.filter((p) => p.student_id === email);
+    const studentProgress = progress.filter((p) => studentEmailOf(p) === email);
     const studyMinutes = studentProgress.reduce((s, p) => s + (p.time_spent_minutes || 0), 0);
     const completedTopics = studentProgress.filter((p) => p.status === "completed").length;
     const courseProgressPct =
@@ -156,13 +157,13 @@ export default function AdminStudents() {
                           <Link to={`/admin/students/${encodeURIComponent(student.email)}`}>
                             <div className="flex flex-wrap gap-1">
                               {enrollments
-                                .filter((e) => e.student_id === student.email)
+                                .filter((e) => studentEmailOf(e) === student.email)
                                 .slice(0, 3)
                                 .map((enr) => {
-                                  const course = COURSES.find((c) => c.code === enr.course_id);
+                                  const course = COURSES.find((c) => c.code === courseCodeOf(enr));
                                   return course ? (
                                     <span
-                                      key={enr.course_id}
+                                      key={enr.id}
                                       className="px-2 py-0.5 rounded text-xs text-white"
                                       style={{ backgroundColor: course.color }}
                                     >

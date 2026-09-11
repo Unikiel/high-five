@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
+import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
 import {
   BookOpen, Target, TrendingUp, Calendar, ChevronRight,
   Flame, Award, Clock, Zap, ArrowRight, Star
@@ -26,9 +27,9 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       const [enr, prog, exams] = await Promise.all([
-        base44.entities.Enrollment.filter({ student_id: user?.email }),
-        base44.entities.Progress.filter({ student_id: user?.email }),
-        base44.entities.Exam.filter({ student_id: user?.email }, "-created_date", 5)
+        base44.entities.Enrollment.filter(byStudentEmail(user?.email)),
+        base44.entities.Progress.filter(byStudentEmail(user?.email)),
+        base44.entities.Exam.filter(byStudentEmail(user?.email), "-created_date", 5)
       ]);
       setEnrollments(enr);
       setProgress(prog);
@@ -42,7 +43,7 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  const enrolledCourses = COURSES.filter(c => enrollments.some(e => e.course_id === c.code));
+  const enrolledCourses = COURSES.filter(c => enrollments.some(e => courseCodeOf(e) === c.code));
   const totalStudyTime = progress.reduce((s, p) => s + (p.time_spent_minutes || 0), 0);
   const avgScore = recentExams.filter(e => e.score != null).length > 0
     ? Math.round(recentExams.filter(e => e.score != null).reduce((s, e) => s + e.score, 0) / recentExams.filter(e => e.score != null).length)
@@ -116,7 +117,7 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {enrolledCourses.map(course => {
-                const courseProgress = progress.filter(p => p.course_id === course.code);
+                const courseProgress = progress.filter(p => courseCodeOf(p) === course.code);
                 const completed = courseProgress.filter(p => p.status === "completed").length;
                 const total = courseProgress.length || 1;
                 const pct = Math.round((completed / total) * 100);

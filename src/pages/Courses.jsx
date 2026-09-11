@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { COURSES } from "@/lib/courseData";
+import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
 import { BookOpen, CheckCircle, Lock, Search, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,8 +26,8 @@ export default function Courses() {
   const loadData = async () => {
     try {
       const [enr, prog] = await Promise.all([
-        base44.entities.Enrollment.filter({ student_id: user?.email }),
-        base44.entities.Progress.filter({ student_id: user?.email })
+        base44.entities.Enrollment.filter(byStudentEmail(user?.email)),
+        base44.entities.Progress.filter(byStudentEmail(user?.email))
       ]);
       setEnrollments(enr);
       setProgress(prog);
@@ -52,10 +53,10 @@ export default function Courses() {
     c.code.toLowerCase().includes(search.toLowerCase())
   );
 
-  const isEnrolled = (code) => enrollments.some(e => e.course_id === code);
+  const isEnrolled = (code) => enrollments.some(e => courseCodeOf(e) === code);
 
   const getCourseProgress = (code) => {
-    const cp = progress.filter(p => p.course_id === code);
+    const cp = progress.filter(p => courseCodeOf(p) === code);
     const completed = cp.filter(p => p.status === "completed").length;
     return cp.length > 0 ? Math.round((completed / cp.length) * 100) : 0;
   };

@@ -12,14 +12,26 @@
 
 ## Progress log
 
-| Task | Status | Commits |
+| Task | Status | Commits / notes |
 |---|---|---|
-| 0.1 Add Vitest | Done | `9ad26c3`, `4178237` |
-| 0.2 Migration audit function | Code done, **not yet run** | `704d161`, `ffbdda4`, `958e147` |
-| 0.3 Snapshot backup function | Code done, **not yet run** | `bb4aad6`, `958e147` |
-| 1.1 – 1.6 | Not started | — |
+| 0.1 Add Vitest | Done | rebased onto main |
+| 0.2 Migration audit function | Code done, **not yet run against prod** | |
+| 0.3 Snapshot backup function | Code done, **not yet run against prod** | |
+| 1.1 Make `Course.code` immutable | Done | |
+| 1.2 Canonical catalog module | Done | |
+| 1.3 Seed planner (pure, tested) | Done | |
+| 1.4 Seed function entry point | Done | `f2d0181` — `seedCatalog/entry.ts` |
+| 1.5 Make topic seeder idempotent | Done | `8a24cba` |
+| 1.6 Fix admin 50-row cap (`fetchAll`) | Done | `29dfde7` (+ invite-gate already used fetchAll) |
+| 2.1 Transitional schema fields | Done | `d3a906c` (+ Unit/Topic/Question `course_code` in 1.4) |
+| 2.2 Dual-write creates | Done | `d949cdc` |
+| 2.3 Backfill transitional fields | Code done, **not yet run against prod** | `backfillLegacyNames/entry.ts` |
+| 2.4 Switch reads (with `$or` legacy fallback) | In progress (this session) | Prefer transitional; `$or` keeps pre-backfill rows visible |
+| 2.5+ FK rewrite | Not started | **Do not run until 0.2/0.3/2.3 applied and 2.4 shipped** |
 
-**Nothing has touched the production database yet.** Tasks 0.2 and 0.3 only add code; their deploy-and-invoke steps are deliberately deferred to a single batched session (see "Database-run checklist" at the bottom of this document) so that all read-only measurement happens at one consistent point in time.
+**Nothing has overwritten production `*_id` values yet.** Deploy order that keeps the site up: (1) schemas + dual-write + `$or` readers, (2) run audit+snapshot+backfill, (3) only then seedCatalog / rewrite ids.
+
+**Do not start Milestone 2 irreversible writes until Milestone 1's `seedCatalog/entry.ts` exists and the database-run checklist Steps 1–6 have been completed.**
 
 Two corrections were made after Task 0.2 was first written, both worth knowing because they invalidate any audit output captured before commit `ffbdda4`:
 
@@ -1435,12 +1447,20 @@ Deno.serve(async (req) => {
       await applyUpdates(svc.Course, coursePlan.update);
     }
 
-    // Re-read courses so newly created rows contribute their ids.
-    const courses = dryRun && coursePlan.create.length > 0 ? [] : await listAll(svc.Course);
+    // Re-read courses so newly created rows contribute their ids. On a dry run
+    // the creates did not happen, so those codes genuinely have no id yet — but
+    // every course that already exists still does, and resolving those is what
+    // makes a dry run against a partially seeded database informative.
+    const courses = await listAll(svc.Course);
     const courseIdByCode = new Map<string, string>(courses.map((c: any) => [c.code, c.id]));
 
     const unitPlan = planUnitUpserts(CATALOG, await listAll(svc.Unit), courseIdByCode);
-    if (!dryRun) {
+
+    // Units get the same duplicate guard courses get. It cannot be a clean 409
+    // like the course one, because the course writes above have already landed,
+    // so report the course outcome and refuse only the unit writes.
+    const unitsBlocked = unitPlan.duplicateUnits.length > 0;
+    if (!dryRun && !unitsBlocked) {
       await applyCreates(svc.Unit, unitPlan.create);
       await applyUpdates(svc.Unit, unitPlan.update);
     }
@@ -1453,11 +1473,22 @@ Deno.serve(async (req) => {
         unchanged: coursePlan.unchanged,
       },
       units: {
+        // planned_* rather than created/updated when blocked, so the numbers are
+        // never mistaken for work that actually happened.
+        applied: !dryRun && !unitsBlocked,
         created: unitPlan.create.length,
         updated: unitPlan.update.length,
         unchanged: unitPlan.unchanged,
         skipped_courses: unitPlan.skippedCourses,
+        duplicate_units: unitPlan.duplicateUnits,
+        stale_weights: unitPlan.staleWeights,
       },
+      ...(unitsBlocked
+        ? {
+            error:
+              'Duplicate Unit rows found; no unit writes were performed. Resolve the rows listed in units.duplicate_units and re-run.',
+          }
+        : {}),
     });
   } catch (error) {
     console.error('seedCatalog error', error);
@@ -1475,7 +1506,11 @@ const { base44 } = await import("/src/api/base44Client.js");
 await base44.functions.invoke("seedCatalog", { dry_run: true })
 ```
 
-Expected on a fresh database: `courses.created: 10`, `units.skipped_courses` listing all 10 codes (because no `Course` rows exist yet, so no ids can be resolved during a dry run). That is correct dry-run behaviour, not a bug.
+Expected on a **fresh** database: `courses.created: 10`, and `units.skipped_courses` listing all 10 codes — no `Course` rows exist yet, so no ids can be resolved and no unit work can be planned. That is correct dry-run behaviour, not a bug.
+
+On a **partially seeded** database the dry run resolves the courses that already exist and only skips the ones still to be created, so the unit numbers it reports are real for the resolved courses.
+
+Also check `units.duplicate_units` is `[]`. If it is not, two `Unit` rows share a course and unit number — most likely one legacy row keyed by course code and one already keyed by course id. Resolve them before applying, because the seeder will refuse all unit writes while any remain.
 
 - [ ] **Step 4: Apply, then apply again**
 
@@ -1483,9 +1518,11 @@ Expected on a fresh database: `courses.created: 10`, `units.skipped_courses` lis
 await base44.functions.invoke("seedCatalog", { dry_run: false })
 ```
 
-Expected first run: `courses.created: 10` and `units.created` equal to the total unit count in the catalog (85 with the BC override in place — confirm against your own port).
+Expected first run: `courses.created: 10`, `units.applied: true`, and `units.created: 68` — the catalog's total unit count, pinned by the test in Task 1.2.
 
-Run the identical call a second time. Expected: `created: 0` for both, `updated: 0`, `unchanged` equal to the previous created counts. **If the second run creates anything, the planner's matching key is wrong — stop and fix it before continuing.** This idempotency check is the whole point of the task.
+Run the identical call a second time. Expected: `created: 0` and `updated: 0` for both, with `courses.unchanged: 10` and `units.unchanged: 68`. **If the second run creates or updates anything, the planner's matching key is wrong — stop and fix it before continuing.** This idempotency check is the whole point of the task.
+
+Note that a non-empty `units.stale_weights` will keep reappearing on every run by design. It lists units whose stored exam weight the catalog no longer assesses; the seeder deliberately will not write an undefined over a stored number, so clearing those is a manual decision. It does not count as a failed idempotency check, because nothing is being written.
 
 - [ ] **Step 5: Commit**
 

@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { fetchAll } from "@/lib/fetchAll";
 import { COURSES } from "@/lib/courseData";
+import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import {
   Award,
@@ -40,9 +41,9 @@ export default function AdminStudentDetail() {
     try {
       const [users, enr, prog, ex] = await Promise.all([
         fetchAll(base44.entities.User),
-        base44.entities.Enrollment.filter({ student_id: studentEmail }),
-        base44.entities.Progress.filter({ student_id: studentEmail }),
-        base44.entities.Exam.filter({ student_id: studentEmail }, "-created_date", 100),
+        base44.entities.Enrollment.filter(byStudentEmail(studentEmail)),
+        base44.entities.Progress.filter(byStudentEmail(studentEmail)),
+        base44.entities.Exam.filter(byStudentEmail(studentEmail), "-created_date", 100),
       ]);
       const match = users.find(
         (u) => (u.email || "").toLowerCase() === studentEmail.toLowerCase()
@@ -94,7 +95,7 @@ export default function AdminStudentDetail() {
   }
 
   const enrolledCourses = COURSES.filter((c) =>
-    enrollments.some((e) => e.course_id === c.code)
+    enrollments.some((e) => courseCodeOf(e) === c.code)
   );
   const completedExams = exams.filter((e) => e.status === "completed");
   const avgScore =
@@ -106,7 +107,7 @@ export default function AdminStudentDetail() {
   const totalStudyTime = progress.reduce((s, p) => s + (p.time_spent_minutes || 0), 0);
 
   const courseRows = enrolledCourses.map((course) => {
-    const cp = progress.filter((p) => p.course_id === course.code);
+    const cp = progress.filter((p) => courseCodeOf(p) === course.code);
     const completed = cp.filter((p) => p.status === "completed").length;
     const total = cp.length;
     const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -242,12 +243,12 @@ export default function AdminStudentDetail() {
                 </thead>
                 <tbody className="divide-y divide-border/50">
                   {sortedProgress.map((row) => {
-                    const course = COURSES.find((c) => c.code === row.course_id);
+                    const course = COURSES.find((c) => c.code === courseCodeOf(row));
                     return (
-                      <tr key={row.id || `${row.course_id}-${row.topic_id}`}>
+                      <tr key={row.id || `${courseCodeOf(row)}-${row.topic_id}`}>
                         <td className="py-3 px-6">
                           <span className="font-medium text-foreground">
-                            {course?.name || row.course_id}
+                            {course?.name || courseCodeOf(row)}
                           </span>
                           {row.topic_id && (
                             <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate max-w-[220px]">

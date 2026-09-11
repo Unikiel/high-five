@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { fetchAll } from "@/lib/fetchAll";
 import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
+import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
 import { Calendar, Clock, User, Plus, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ export default function Tutoring() {
   const loadData = async () => {
     try {
       const [s, u] = await Promise.all([
-        base44.entities.TutoringSession.filter({ student_id: user?.email }),
+        base44.entities.TutoringSession.filter(byStudentEmail(user?.email)),
         fetchAll(base44.entities.User)
       ]);
       setSessions(s.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
@@ -99,7 +100,7 @@ export default function Tutoring() {
 
   const SessionCard = ({ session }) => {
     const { color, icon: Icon } = STATUS_CONFIG[session.status] || STATUS_CONFIG.pending;
-    const course = COURSES.find(c => c.code === session.course_id);
+    const course = COURSES.find(c => c.code === courseCodeOf(session));
     return (
       <Card className="border-border/50">
         <CardContent className="p-4 flex items-start gap-4">
@@ -109,7 +110,7 @@ export default function Tutoring() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-foreground text-sm">{course?.name || session.course_id}</h3>
+              <h3 className="font-semibold text-foreground text-sm">{course?.name || courseCodeOf(session)}</h3>
               <Badge className={`${color} border-0 text-xs flex-shrink-0`}>
                 <Icon className="w-3 h-3 mr-1" />{session.status}
               </Badge>

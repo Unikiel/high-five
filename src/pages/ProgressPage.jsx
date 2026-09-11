@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { COURSES } from "@/lib/courseData";
+import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
 import { TrendingUp, Target, Clock, Award, BarChart2, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -21,9 +22,9 @@ export default function ProgressPage() {
   const loadData = async () => {
     try {
       const [prog, e, enr] = await Promise.all([
-        base44.entities.Progress.filter({ student_id: user?.email }),
-        base44.entities.Exam.filter({ student_id: user?.email }, "-created_date", 20),
-        base44.entities.Enrollment.filter({ student_id: user?.email })
+        base44.entities.Progress.filter(byStudentEmail(user?.email)),
+        base44.entities.Exam.filter(byStudentEmail(user?.email), "-created_date", 20),
+        base44.entities.Enrollment.filter(byStudentEmail(user?.email))
       ]);
       setProgress(prog);
       setExams(e);
@@ -32,7 +33,7 @@ export default function ProgressPage() {
     setLoading(false);
   };
 
-  const enrolledCourses = COURSES.filter(c => enrollments.some(e => e.course_id === c.code));
+  const enrolledCourses = COURSES.filter(c => enrollments.some(e => courseCodeOf(e) === c.code));
   const completedExams = exams.filter(e => e.status === "completed");
   const avgScore = completedExams.length > 0
     ? Math.round(completedExams.reduce((s, e) => s + (e.score || 0), 0) / completedExams.length)
@@ -46,7 +47,7 @@ export default function ProgressPage() {
   }));
 
   const courseProgressData = enrolledCourses.map(course => {
-    const cp = progress.filter(p => p.course_id === course.code);
+    const cp = progress.filter(p => courseCodeOf(p) === course.code);
     const completed = cp.filter(p => p.status === "completed").length;
     const total = cp.length || 1;
     return {
