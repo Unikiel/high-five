@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { COURSES } from "@/lib/courseData";
-import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
+import { byStudent, courseCodeOf } from "@/lib/legacyFields";
 import { TrendingUp, Target, Clock, Award, BarChart2, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -17,14 +17,17 @@ export default function ProgressPage() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    if (!user?.id && !user?.email) return;
+    loadData();
+  }, [user?.id, user?.email]);
 
   const loadData = async () => {
     try {
       const [prog, e, enr] = await Promise.all([
-        base44.entities.Progress.filter(byStudentEmail(user?.email)),
-        base44.entities.Exam.filter(byStudentEmail(user?.email), "-created_date", 20),
-        base44.entities.Enrollment.filter(byStudentEmail(user?.email))
+        base44.entities.Progress.filter(byStudent(user)),
+        base44.entities.Exam.filter(byStudent(user), "-created_date", 20),
+        base44.entities.Enrollment.filter(byStudent(user))
       ]);
       setProgress(prog);
       setExams(e);

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courseData";
-import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
+import { courseCodeOf, matchesStudent, studentEmailOf } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { filterStudents } from "@/lib/studentRoles";
 import BackLink from "@/components/BackLink";
@@ -105,7 +105,7 @@ export default function AdminOverview() {
                   <p className="text-xs text-muted-foreground truncate">{student.email}</p>
                 </div>
                 <Badge variant="secondary" className="text-xs flex-shrink-0">
-                  {enrollments.filter(e => studentEmailOf(e) === student.email).length} courses
+                  {enrollments.filter(e => matchesStudent(e, student)).length} courses
                 </Badge>
               </div>
             ))}

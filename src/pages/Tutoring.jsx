@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { fetchAll } from "@/lib/fetchAll";
 import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
-import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
+import { byStudent, courseCodeOf } from "@/lib/legacyFields";
 import { Calendar, Clock, User, Plus, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export default function Tutoring() {
   const loadData = async () => {
     try {
       const [s, u] = await Promise.all([
-        base44.entities.TutoringSession.filter(byStudentEmail(user?.email)),
+        base44.entities.TutoringSession.filter(byStudent(user)),
         fetchAll(base44.entities.User)
       ]);
       setSessions(s.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
@@ -69,10 +69,18 @@ export default function Tutoring() {
     if (!form.course_id || !form.scheduled_date || !form.scheduled_time || !form.end_time || durationMinutes <= 0) return;
     setSubmitting(true);
     try {
+      const tutor = form.tutor_id
+        ? tutors.find((t) => t.email === form.tutor_id)
+        : null;
       await base44.entities.TutoringSession.create({
-        student_id: user?.email,
+        student_id: user?.id || user?.email,
         student_email: user?.email,
-        ...(form.tutor_id ? { tutor_id: form.tutor_id, tutor_email: form.tutor_id } : {}),
+        ...(form.tutor_id
+          ? {
+              tutor_id: tutor?.id || form.tutor_id,
+              tutor_email: tutor?.email || form.tutor_id,
+            }
+          : {}),
         course_id: form.course_id,
         course_code: form.course_id,
         scheduled_date: form.scheduled_date,

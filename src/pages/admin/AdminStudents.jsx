@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { fetchAll } from "@/lib/fetchAll";
 import { filterStudents } from "@/lib/studentRoles";
 import { COURSES } from "@/lib/courseData";
-import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
+import { courseCodeOf, matchesStudent } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { Search, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,14 +50,14 @@ export default function AdminStudents() {
       s.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getStudentStats = (email) => {
-    const enr = enrollments.filter((e) => studentEmailOf(e) === email);
-    const studentExams = exams.filter((e) => studentEmailOf(e) === email && e.status === "completed");
+  const getStudentStats = (student) => {
+    const enr = enrollments.filter((e) => matchesStudent(e, student));
+    const studentExams = exams.filter((e) => matchesStudent(e, student) && e.status === "completed");
     const avgScore =
       studentExams.length > 0
         ? Math.round(studentExams.reduce((s, e) => s + (e.score || 0), 0) / studentExams.length)
         : null;
-    const studentProgress = progress.filter((p) => studentEmailOf(p) === email);
+    const studentProgress = progress.filter((p) => matchesStudent(p, student));
     const studyMinutes = studentProgress.reduce((s, p) => s + (p.time_spent_minutes || 0), 0);
     const completedTopics = studentProgress.filter((p) => p.status === "completed").length;
     const courseProgressPct =
@@ -126,7 +126,7 @@ export default function AdminStudents() {
                       avgScore,
                       studyMinutes,
                       courseProgressPct,
-                    } = getStudentStats(student.email);
+                    } = getStudentStats(student);
                     return (
                       <tr key={student.email} className="hover:bg-muted/20 transition-colors">
                         <td className="py-4 px-6">
@@ -157,7 +157,7 @@ export default function AdminStudents() {
                           <Link to={`/admin/students/${encodeURIComponent(student.email)}`}>
                             <div className="flex flex-wrap gap-1">
                               {enrollments
-                                .filter((e) => studentEmailOf(e) === student.email)
+                                .filter((e) => matchesStudent(e, student))
                                 .slice(0, 3)
                                 .map((enr) => {
                                   const course = COURSES.find((c) => c.code === courseCodeOf(enr));

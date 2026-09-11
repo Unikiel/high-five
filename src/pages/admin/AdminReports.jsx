@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { fetchAll } from "@/lib/fetchAll";
 import { filterStudents } from "@/lib/studentRoles";
 import { COURSES } from "@/lib/courseData";
-import { courseCodeOf, studentEmailOf } from "@/lib/legacyFields";
+import { courseCodeOf, matchesStudent } from "@/lib/legacyFields";
 import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import { TrendingUp, Users, Target, Award, Clock, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -266,7 +266,7 @@ export default function AdminReports() {
               {(() => {
                 const studentStats = students
                   .map((s) => {
-                    const studentExams = completedExams.filter((e) => studentEmailOf(e) === s.email);
+                    const studentExams = completedExams.filter((e) => matchesStudent(e, s));
                     const avg =
                       studentExams.length > 0
                         ? Math.round(

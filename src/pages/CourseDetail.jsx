@@ -37,7 +37,7 @@ export default function CourseDetail() {
       const [u, t, prog] = await Promise.all([
         base44.entities.Unit.filter(byCourseCode(courseCode)),
         base44.entities.Topic.filter(byCourseCode(courseCode)),
-        base44.entities.Progress.filter(byStudentAndCourse(user?.email, courseCode))
+        base44.entities.Progress.filter(byStudentAndCourse(user, courseCode))
       ]);
       setUnits(u.sort((a, b) => a.unit_number - b.unit_number));
       setTopics(t);

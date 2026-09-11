@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { COURSES } from "@/lib/courseData";
-import { byStudentEmail, courseCodeOf } from "@/lib/legacyFields";
+import { byStudent, courseCodeOf } from "@/lib/legacyFields";
 import { BookOpen, CheckCircle, Lock, Search, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,8 +26,8 @@ export default function Courses() {
   const loadData = async () => {
     try {
       const [enr, prog] = await Promise.all([
-        base44.entities.Enrollment.filter(byStudentEmail(user?.email)),
-        base44.entities.Progress.filter(byStudentEmail(user?.email))
+        base44.entities.Enrollment.filter(byStudent(user)),
+        base44.entities.Progress.filter(byStudent(user))
       ]);
       setEnrollments(enr);
       setProgress(prog);
@@ -38,9 +38,9 @@ export default function Courses() {
   const handleEnroll = async (courseCode) => {
     try {
       await base44.entities.Enrollment.create({
-        student_id: user?.email,
+        student_id: user?.id || user?.email,
         student_email: user?.email,
-        course_id: courseCode,
+        course_id: courseCode, // keep code for now (curricula URLs); course_code too
         course_code: courseCode,
         enrolled_at: new Date().toISOString(),
       });
