@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { fetchAll } from "@/lib/fetchAll";
 import { getDisplayName } from "@/lib/userDisplay";
 import { COURSES } from "@/lib/courseData";
 import { Calendar, Clock, User, Plus, CheckCircle, XCircle, AlertCircle } from "lucide-react";
@@ -44,7 +45,7 @@ export default function Tutoring() {
     try {
       const [s, u] = await Promise.all([
         base44.entities.TutoringSession.filter({ student_id: user?.email }),
-        base44.entities.User.list()
+        fetchAll(base44.entities.User)
       ]);
       setSessions(s.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
       setTutors(u.filter(u => u.role === "tutor" || u.role === "admin" || u.role === "assistant"));

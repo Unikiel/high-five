@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/fetchAll";
 import { COURSES } from "@/lib/courseData";
 import { getDisplayName } from "@/lib/userDisplay";
 import { Calendar, CheckCircle, XCircle, Clock, User } from "lucide-react";
@@ -24,8 +25,8 @@ export default function AdminSessions() {
   const loadData = async () => {
     try {
       const [s, u] = await Promise.all([
-        base44.entities.TutoringSession.list("-created_date"),
-        base44.entities.User.list()
+        fetchAll(base44.entities.TutoringSession, "-created_date"),
+        fetchAll(base44.entities.User)
       ]);
       setSessions(s);
       setUsers(u);

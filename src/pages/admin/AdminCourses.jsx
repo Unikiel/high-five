@@ -27,6 +27,9 @@ export default function AdminCourses() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [codeError, setCodeError] = useState("");
 
+  // Not paginated on purpose: the catalog is about 10 courses, so list()'s 50-row
+  // default is a safe ceiling. See src/lib/fetchAll.js for tables that do need
+  // paginating.
   const loadCourses = () =>
     base44.entities.Course.list().then(c => { setCourses(c); setLoading(false); }).catch(() => setLoading(false));
 

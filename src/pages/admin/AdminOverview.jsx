@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { fetchAll } from "@/lib/fetchAll";
 import { Users, BookOpen, Target, Calendar, TrendingUp, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,10 @@ export default function AdminOverview() {
   const loadData = async () => {
     try {
       const [u, e, ex, s] = await Promise.all([
-        base44.entities.User.list(),
-        base44.entities.Enrollment.list(),
-        base44.entities.Exam.list(),
-        base44.entities.TutoringSession.list()
+        fetchAll(base44.entities.User),
+        fetchAll(base44.entities.Enrollment),
+        fetchAll(base44.entities.Exam),
+        fetchAll(base44.entities.TutoringSession)
       ]);
       setUsers(u);
       setEnrollments(e);

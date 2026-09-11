@@ -29,6 +29,9 @@ export default function AdminBilling() {
 
   const loadPlans = async () => {
     try {
+      // Not paginated on purpose: this table holds one row per plan, so list()'s
+      // 50-row default is a safe ceiling. See src/lib/fetchAll.js for tables that
+      // do need paginating.
       const p = await base44.entities.Subscription.list();
       if (p.length === 0) {
         // Seed default plans
