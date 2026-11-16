@@ -1,3 +1,5 @@
+import { SOCIAL_STUDIES_COURSES } from './socialStudiesCourses.ts';
+
 export interface CatalogUnit {
   number: number;
   title: string;
@@ -1133,6 +1135,7 @@ export const CATALOG: CatalogCourse[] = [
       },
     ],
   },
+  ...SOCIAL_STUDIES_COURSES,
 ];
 
 /**

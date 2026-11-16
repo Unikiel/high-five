@@ -145,6 +145,68 @@ export const COURSES = [
       { number: 3, title: "Trigonometric and Polar Functions", weight: "30-35%", topics: ["Periodic Phenomena", "Sine, Cosine, and Tangent", "Sine and Cosine Function Values", "Sine and Cosine Function Graphs", "Sinusoidal Function Transformations", "Sinusoidal Function Context and Data Modeling", "Sine and Cosine Function Equations and Inequalities", "The Tangent Function", "Inverse Trigonometric Functions", "Trigonometric Equations and Inequalities", "The Secant, Cosecant, and Cotangent Functions", "Equivalent Representations of Trigonometric Functions", "Trigonometry and Polar Coordinates", "Polar Function Graphs", "Rates of Change in Polar Functions"] },
       { number: 4, title: "Functions Involving Parameters, Vectors, and Matrices", weight: "Not assessed", topics: ["Parametric Functions", "Parametric Functions Modeling Planar Motion", "Parametric Equations and Implicitly Defined Functions", "Vectors", "Vector-Valued Functions", "Matrices", "Matrix Multiplication", "Matrices as Transformations"] }
     ]
+  },
+  {
+    code: "AP_MICRO",
+    name: "AP Microeconomics",
+    color: "#0D9488",
+    icon: "MI",
+    description: "Scarcity, supply and demand, production and costs, market structures, factor markets, and market failure.",
+    units: [
+      { number: 1, title: "Basic Economic Concepts", weight: "12-15%", topics: ["Scarcity", "Resource Allocation and Economic Systems", "Production Possibilities Curve", "Comparative Advantage and Trade", "Cost-Benefit Analysis", "Marginal Analysis and Consumer Choice"] },
+      { number: 2, title: "Supply and Demand", weight: "20-25%", topics: ["Demand", "Supply", "Price Elasticity of Demand", "Price Elasticity of Supply", "Other Elasticities", "Market Equilibrium and Consumer and Producer Surplus", "Market Disequilibrium and Changes in Equilibrium", "The Effects of Government Intervention in Markets", "International Trade and Public Policy"] },
+      { number: 3, title: "Production, Cost, and the Perfect Competition Model", weight: "22-25%", topics: ["The Production Function", "Short-Run Production Costs", "Long-Run Production Costs", "Types of Profit", "Profit Maximization", "Firms' Short-Run Decisions to Produce and Long-Run Decisions to Enter or Exit a Market", "Perfect Competition"] },
+      { number: 4, title: "Imperfect Competition", weight: "15-22%", topics: ["Introduction to Imperfectly Competitive Markets", "Monopoly", "Price Discrimination", "Monopolistic Competition", "Oligopoly and Game Theory"] },
+      { number: 5, title: "Factor Markets", weight: "10-13%", topics: ["Introduction to Factor Markets", "Changes in Factor Demand and Factor Supply", "Profit-Maximizing Behavior in Perfectly Competitive Factor Markets", "Monopsonistic Markets"] },
+      { number: 6, title: "Market Failure and the Role of Government", weight: "8-13%", topics: ["Socially Efficient and Inefficient Market Outcomes", "Externalities", "Public and Private Goods", "The Effects of Government Intervention in Different Market Structures", "Inequality"] }
+    ]
+  },
+  {
+    code: "AP_MACRO",
+    name: "AP Macroeconomics",
+    color: "#4F46E5",
+    icon: "MA",
+    description: "Economic indicators, the AD–AS model, fiscal and monetary policy, the financial sector, growth, and international trade.",
+    units: [
+      { number: 1, title: "Basic Economic Concepts", weight: "5-10%", topics: ["Scarcity", "Opportunity Cost and the Production Possibilities Curve (PPC)", "Comparative Advantage and Gains from Trade", "Demand", "Supply", "Market Equilibrium, Disequilibrium, and Changes in Equilibrium"] },
+      { number: 2, title: "Economic Indicators and the Business Cycle", weight: "12-17%", topics: ["The Circular Flow and GDP", "Limitations of GDP", "Unemployment", "Price Indices and Inflation", "Costs of Inflation", "Real v. Nominal GDP", "Business Cycles"] },
+      { number: 3, title: "National Income and Price Determination", weight: "17-27%", topics: ["Aggregate Demand (AD)", "Multipliers", "Short-Run Aggregate Supply (SRAS)", "Long-Run Aggregate Supply (LRAS)", "Equilibrium in the Aggregate Demand–Aggregate Supply (AD–AS) Model", "Changes in the AD–AS Model in the Short Run", "Long-Run Self-Adjustment", "Fiscal Policy", "Automatic Stabilizers"] },
+      { number: 4, title: "Financial Sector", weight: "18-23%", topics: ["Financial Assets", "Nominal v. Real Interest Rates", "Definition, Measurement, and Functions of Money", "Banking and the Expansion of the Money Supply", "The Money Market", "Monetary Policy", "The Loanable Funds Market"] },
+      { number: 5, title: "Long-Run Consequences of Stabilization Policies", weight: "20-30%", topics: ["Fiscal and Monetary Policy Actions in the Short Run", "The Phillips Curve", "Money Growth and Inflation", "Government Deficits and the National Debt", "Crowding Out", "Economic Growth", "Public Policy and Economic Growth"] },
+      { number: 6, title: "Open Economy—International Trade and Finance", weight: "10-13%", topics: ["Balance of Payments Accounts", "Exchange Rates", "The Foreign Exchange Market", "Effect of Changes in Policies and Economic Conditions on the Foreign Exchange Market", "Changes in the Foreign Exchange Market and Net Exports", "Real Interest Rates and International Capital Flows"] }
+    ]
+  },
+  {
+    code: "AP_PSYCH",
+    name: "AP Psychology",
+    color: "#DB2777",
+    icon: "PS",
+    description: "Biological bases of behavior, cognition, development and learning, social psychology and personality, and mental and physical health.",
+    units: [
+      { number: 1, title: "Biological Bases of Behavior", weight: "15-25%", topics: ["Interaction of Heredity and Environment", "Overview of the Nervous System", "The Neuron and Neural Firing", "The Brain", "Sleep", "Sensation"] },
+      { number: 2, title: "Cognition", weight: "15-25%", topics: ["Perception", "Thinking, Problem-Solving, Judgments, and Decision-Making", "Introduction to Memory", "Encoding Memories", "Storing Memories", "Retrieving Memories", "Forgetting and Other Memory Challenges", "Intelligence and Achievement"] },
+      { number: 3, title: "Development and Learning", weight: "15-25%", topics: ["Themes and Methods in Developmental Psychology", "Physical Development Across the Lifespan", "Gender and Sexual Orientation", "Cognitive Development Across the Lifespan", "Communication and Language Development", "Social-Emotional Development Across the Lifespan", "Classical Conditioning", "Operant Conditioning", "Social, Cognitive, and Neurological Factors in Learning"] },
+      { number: 4, title: "Social Psychology and Personality", weight: "15-25%", topics: ["Attribution Theory and Person Perception", "Attitude Formation and Attitude Change", "Psychology of Social Situations", "Psychodynamic and Humanistic Theories of Personality", "Social-Cognitive and Trait Theories of Personality", "Motivation", "Emotion"] },
+      { number: 5, title: "Mental and Physical Health", weight: "15-25%", topics: ["Introduction to Health Psychology", "Positive Psychology", "Explaining and Classifying Psychological Disorders", "Selection of Categories of Psychological Disorders", "Treatment of Psychological Disorders"] }
+    ]
+  },
+  {
+    code: "AP_USH",
+    name: "AP United States History",
+    color: "#B45309",
+    icon: "US",
+    description: "U.S. history from 1491 to the present across nine periods, with historical thinking and source-analysis skills.",
+    units: [
+      { number: 1, title: "Period 1: 1491–1607", weight: "4-6%", topics: ["Contextualizing Period 1", "Native American Societies Before European Contact", "European Exploration in the Americas", "Columbian Exchange, Spanish Exploration, and Conquest", "Labor, Slavery, and Caste in the Spanish Colonial System", "Cultural Interactions Between Europeans, Native Americans, and Africans", "Causation in Period 1"] },
+      { number: 2, title: "Period 2: 1607–1754", weight: "6-8%", topics: ["Contextualizing Period 2", "European Colonization", "The Regions of British Colonies", "Transatlantic Trade", "Interactions Between American Indians and Europeans", "Slavery in the British Colonies", "Colonial Society and Culture", "Comparison in Period 2"] },
+      { number: 3, title: "Period 3: 1754–1800", weight: "10-17%", topics: ["Contextualizing Period 3", "The Seven Years' War (The French and Indian War)", "Taxation Without Representation", "Philosophical Foundations of the American Revolution", "The American Revolution", "The Influence of Revolutionary Ideals", "The Articles of Confederation", "The Constitutional Convention and Debates over Ratification", "The Constitution", "Shaping a New Republic", "Developing an American Identity", "Movement in the Early Republic", "Continuity and Change in Period 3"] },
+      { number: 4, title: "Period 4: 1800–1848", weight: "10-17%", topics: ["Contextualizing Period 4", "The Rise of Political Parties and the Era of Jefferson", "Politics and Regional Interests", "America on the World Stage", "Market Revolution: Industrialization", "Market Revolution: Society and Culture", "Expanding Democracy", "Jackson and Federal Power", "The Development of an American Culture", "The Second Great Awakening", "An Age of Reform", "African Americans in the Early Republic", "The Society of the South in the Early Republic", "Causation in Period 4"] },
+      { number: 5, title: "Period 5: 1844–1877", weight: "10-17%", topics: ["Contextualizing Period 5", "Manifest Destiny", "The Mexican–American War", "The Compromise of 1850", "Sectional Conflict: Regional Differences", "Failure of Compromise", "Election of 1860 and Secession", "Military Conflict in the Civil War", "Government Policies During the Civil War", "Reconstruction", "Failure of Reconstruction", "Comparison in Period 5"] },
+      { number: 6, title: "Period 6: 1865–1898", weight: "10-17%", topics: ["Contextualizing Period 6", "Westward Expansion: Economic Development", "Westward Expansion: Social and Cultural Development", "The \"New South\"", "Technological Innovation", "The Rise of Industrial Capitalism", "Labor in the Gilded Age", "Immigration and Migration in the Gilded Age", "Responses to Immigration in the Gilded Age", "Development of the Middle Class", "Reform in the Gilded Age", "Controversies over the Role of Government in the Gilded Age", "Politics in the Gilded Age", "Continuity and Change in Period 6"] },
+      { number: 7, title: "Period 7: 1890–1945", weight: "10-17%", topics: ["Contextualizing Period 7", "Imperialism: Debates", "The Spanish–American War", "The Progressives", "World War I: Military and Diplomacy", "World War I: Home Front", "1920s: Innovations in Communication and Technology", "1920s: Cultural and Political Controversies", "The Great Depression", "The New Deal", "Interwar Foreign Policy", "World War II: Mobilization", "World War II: Military", "Postwar Diplomacy", "Comparison in Period 7"] },
+      { number: 8, title: "Period 8: 1945–1980", weight: "10-17%", topics: ["Contextualizing Period 8", "The Cold War from 1945 to 1980", "The Red Scare", "Economy after 1945", "Culture after 1945", "Early Steps in the Civil Rights Movement (1940s and 1950s)", "America as a World Power", "The Vietnam War", "The Great Society", "The African American Civil Rights Movement (1960s)", "The Civil Rights Movement Expands", "Youth Culture of the 1960s", "The Environment and Natural Resources from 1968 to 1980", "Society in Transition", "Continuity and Change in Period 8"] },
+      { number: 9, title: "Period 9: 1980–Present", weight: "4-6%", topics: ["Contextualizing Period 9", "Reagan and Conservatism", "The End of the Cold War", "A Changing Economy", "Migration and Immigration in the 1990s and 2000s", "Challenges of the 21st Century", "Causation in Period 9"] }
+    ]
   }
 ];
 

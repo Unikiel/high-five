@@ -1,19 +1,35 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { COURSE_NAMES, COURSE_SUBJECT, courseCodeOf, courseScope } from '../../shared/courseNames.ts';
 
 const AUTOMATION_TOKEN = 'hf-qbank-v1-2p8d4n7wk3';
 const TARGET_PER_TOPIC = 9;
 
-const COURSE_NAMES = {
-  AP_CALC_AB: 'AP Calculus AB',
-  AP_CALC_BC: 'AP Calculus BC',
-  AP_PHYSICS_1: 'AP Physics 1',
-  AP_PHYSICS_2: 'AP Physics 2',
-  AP_PHYSICS_CM: 'AP Physics C: Mechanics',
-  AP_PHYSICS_CE: 'AP Physics C: Electricity and Magnetism',
-  AP_CSP: 'AP Computer Science Principles',
-  AP_CSA: 'AP Computer Science A',
-  AP_STATS: 'AP Statistics',
-  AP_PRECALC: 'AP Precalculus'
+const MONEY_RULE = `- Money: write dollar amounts as plain text with the dollar sign directly before the number (for example $5 or $2,000). Never put a money amount inside LaTeX math; in a formula that involves money, write the number without the dollar sign.`;
+
+const QUESTION_NOTES = {
+  economics: `
+SUBJECT NOTES (economics topics):
+- There are no images. When a question depends on a graph or table, describe it in words inside the stem: axis labels, curves, labeled points and values. Present table data as short plain-text lines, one row per line (real line breaks are allowed for this).
+- Mix calculation items with model-reasoning items (which curve shifts, what happens to equilibrium price, quantity, output, or the interest rate).
+- Distractors reflect classic errors: a shift confused with a movement along a curve, nominal confused with real, marginal confused with average or total, the short run confused with the long run.
+${MONEY_RULE}
+`,
+  psychology: `
+SUBJECT NOTES (psychology topics):
+- Most items are scenario-based application: a concrete situation, then the concept that best explains it. Include some research-methods and data-interpretation items (design, variables, sampling, ethics, what a result does or does not show).
+- Use the exact terminology of the current AP Psychology CED (2024-25 framework). Distractors are the most closely related, easily confused terms.
+- Do not use LaTeX for ordinary text.
+${MONEY_RULE}
+`,
+  history: `
+SUBJECT NOTES (U.S. history topics):
+- Every question is stimulus-based, as on the real exam. Write the stimulus as its own first paragraph of two to four sentences, then a blank line, then the question.
+- The stimulus must be one of: (a) a short, accurate quotation from a specific real document that you name with its author, title and year (for example the Declaration of Independence, Federalist No. 10, the Monroe Doctrine, the Gettysburg Address); (b) a historian's interpretation written as a summary that begins "A historian argues that ..."; or (c) a plain description of a real map, political cartoon, photograph or data set, with its date. Never put invented words in quotation marks, and never attribute a made-up quotation to a person, an official, or an unnamed letter or diary.
+- The question assesses historical reasoning with specific evidence from the period: causation, comparison, continuity and change, contextualization, or the source's point of view, purpose, and audience. The answer must not be findable by reading the stimulus alone.
+- Distractors are plausible developments from the wrong period, the wrong region, or the opposite cause or effect.
+- Do not use LaTeX.
+${MONEY_RULE}
+`,
 };
 
 Deno.serve(async (req) => {
@@ -30,7 +46,7 @@ Deno.serve(async (req) => {
 
     const limit = Math.min(Number(body.limit || 3), 4);
     const target = Number(body.target || TARGET_PER_TOPIC);
-    const courseId = body.course_id || null;
+    const inScope = courseScope(body);
 
     const units = await base44.asServiceRole.entities.Unit.list('created_date', 500);
     const unitById = new Map(units.map((unit) => [unit.id, unit]));
@@ -43,7 +59,7 @@ Deno.serve(async (req) => {
     }
 
     const pendingAll = allTopics.filter((topic) =>
-      (!courseId || topic.course_id === courseId) && (countByTopic.get(topic.id) || 0) < target
+      inScope(topic) && (countByTopic.get(topic.id) || 0) < target
     );
     const pending = pendingAll
       .sort((a, b) => `${a.course_id}-${String(a.topic_number).padStart(8, '0')}`.localeCompare(`${b.course_id}-${String(b.topic_number).padStart(8, '0')}`))
@@ -59,8 +75,12 @@ Deno.serve(async (req) => {
     }
 
     const topicList = pending
-      .map((t) => `topic_id=${t.id} | needed=${t.needed} questions | ${COURSE_NAMES[t.course_id] || t.course_id} | Unit: ${t.unit_title} | Topic ${t.topic_number}: ${t.title}`)
+      .map((t) => `topic_id=${t.id} | needed=${t.needed} questions | ${COURSE_NAMES[courseCodeOf(t)] || courseCodeOf(t)} | Unit: ${t.unit_title} | Topic ${t.topic_number}: ${t.title}`)
       .join('\n');
+
+    const subjectNotes = [...new Set(pending.map((t) => COURSE_SUBJECT[courseCodeOf(t)]))]
+      .map((subject) => QUESTION_NOTES[subject] || '')
+      .join('');
 
     const generated = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
@@ -70,7 +90,7 @@ For EACH topic below, write exactly the "needed" number of ORIGINAL multiple-cho
 
 TOPICS:
 ${topicList}
-
+${subjectNotes}
 Requirements per question:
 - topic_id: exactly as given
 - difficulty: "easy", "medium", or "hard"
@@ -113,6 +133,7 @@ Return JSON only.`,
         const topic = topicById.get(q.topic_id);
         return {
           course_id: topic.course_id,
+          course_code: courseCodeOf(topic),
           unit_id: topic.unit_id,
           topic_id: topic.id,
           type: 'multiple_choice',

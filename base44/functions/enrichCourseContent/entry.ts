@@ -1,19 +1,38 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { COURSE_NAMES, COURSE_SUBJECT, courseCodeOf, courseScope } from '../../shared/courseNames.ts';
 
 const AUTOMATION_TOKEN = 'hf-enrich-v2-8f3k2m9xq7';
 const CONTENT_VERSION = 2;
 
-const COURSE_NAMES = {
-  AP_CALC_AB: 'AP Calculus AB',
-  AP_CALC_BC: 'AP Calculus BC',
-  AP_PHYSICS_1: 'AP Physics 1',
-  AP_PHYSICS_2: 'AP Physics 2',
-  AP_PHYSICS_CM: 'AP Physics C: Mechanics',
-  AP_PHYSICS_CE: 'AP Physics C: Electricity and Magnetism',
-  AP_CSP: 'AP Computer Science Principles',
-  AP_CSA: 'AP Computer Science A',
-  AP_STATS: 'AP Statistics',
-  AP_PRECALC: 'AP Precalculus'
+const MONEY_RULE = `- Money: write dollar amounts as plain text with the dollar sign directly before the number (for example $5 or $2,000). Never put a money amount inside LaTeX math; in a formula that involves money, write the number without the dollar sign.`;
+
+const LESSON_NOTES = {
+  economics: `
+SUBJECT NOTES (economics):
+- Use the exact terms the CED uses (for example "production possibilities curve (PPC)", not "frontier").
+- latex_formulas: the real formulas for this topic (elasticity, multipliers, GDP, profit, and so on) as raw LaTeX; [] only if the topic truly has none.
+- There are no images. Describe every graph in words precisely enough to draw it: axis labels, each curve and its slope, the starting equilibrium, which curve shifts and in which direction, and the new equilibrium price and quantity.
+- Present data tables as short plain-text lines (one row per line), never markdown tables.
+- Worked examples follow AP exam style: calculate, then explain the result with the model (shift vs. movement along a curve, short run vs. long run).
+${MONEY_RULE}
+`,
+  psychology: `
+SUBJECT NOTES (psychology):
+- Use the exact terminology of the current AP Psychology CED (2024-25 framework) and name the theorists and classic studies the CED associates with this topic.
+- latex_formulas: return [] unless the topic has a genuinely quantitative idea. Do not use LaTeX for ordinary text.
+- "How It Works" applies each concept to a concrete everyday scenario. "AP Exam Strategy" covers how the topic appears in multiple-choice, the Article Analysis Question, and the Evidence-Based Question.
+- Worked examples are AP-style: a scenario or short research summary followed by a question. The solution names the concept, applies it to the specifics, and rules out the closest confusable term; where relevant it identifies the research design, the variables, or the ethical guideline.
+${MONEY_RULE}
+`,
+  history: `
+SUBJECT NOTES (U.S. history):
+- Anchor every claim in specific historical evidence from this period: named people, laws, court cases, treaties, events, and dates. Tie the topic to its CED theme and to the wider period.
+- For "Contextualizing Period N", "Causation in Period N", "Comparison in Period N", and "Continuity and Change in Period N" topics, teach that historical reasoning process using this period's evidence.
+- latex_formulas: return []. Do not use LaTeX.
+- "AP Exam Strategy" covers how the topic is assessed in stimulus-based multiple-choice, short-answer, document-based, and long essay questions.
+- Worked examples are AP-style: one stimulus-based multiple-choice item and one short-answer prompt, each with a full model response. Quote a source only if it is a real, well-known document quoted accurately with its author, title and year; otherwise summarize it ("A historian argues that ...") or describe it. Never put invented words in quotation marks.
+${MONEY_RULE}
+`,
 };
 
 Deno.serve(async (req) => {
@@ -29,14 +48,14 @@ Deno.serve(async (req) => {
     }
 
     const limit = Math.min(Number(body.limit || 3), 4);
-    const courseId = body.course_id || null;
+    const inScope = courseScope(body);
 
     const units = await base44.asServiceRole.entities.Unit.list('created_date', 500);
     const unitById = new Map(units.map((unit) => [unit.id, unit]));
     const allTopics = await base44.asServiceRole.entities.Topic.list('created_date', 1000);
 
     const pendingAll = allTopics.filter((topic) =>
-      (!courseId || topic.course_id === courseId) && topic.content_version !== CONTENT_VERSION
+      inScope(topic) && topic.content_version !== CONTENT_VERSION
     );
     const pending = pendingAll
       .sort((a, b) => `${a.course_id}-${String(a.topic_number).padStart(8, '0')}`.localeCompare(`${b.course_id}-${String(b.topic_number).padStart(8, '0')}`))
@@ -60,7 +79,7 @@ Deno.serve(async (req) => {
 
 Write substantive, topic-specific teaching content for this topic. Every sentence must be specific to this exact CED topic — never reusable boilerplate that could describe another topic.
 
-TOPIC: ${COURSE_NAMES[topic.course_id] || topic.course_id} | Unit: ${topic.unit_title} | Topic ${topic.topic_number}: ${topic.title}
+TOPIC: ${COURSE_NAMES[courseCodeOf(topic)] || courseCodeOf(topic)} | Unit: ${topic.unit_title} | Topic ${topic.topic_number}: ${topic.title}
 
 Return:
 - description: 1-2 sentences describing exactly what this CED topic covers and its learning objective.
@@ -69,7 +88,7 @@ Return:
 - lesson_content: a thorough teaching text of 300-500 words in markdown with these exact section headers: "## The Big Idea", "## Key Definitions and Rules", "## How It Works", "## AP Exam Strategy", "## Common Mistakes". Embed ALL math as inline LaTeX between single dollar signs (e.g. $f'(x) = \\\\lim_{h \\\\to 0} \\\\frac{f(x+h)-f(x)}{h}$) or display LaTeX between double dollar signs. Use real numbers, real function examples, real physical scenarios, or real code — never vague descriptions.
 - cheatsheet: 5-8 newline-separated exam-day reminders specific to this topic, each with concrete content (include the key formula or condition in LaTeX $...$ where relevant).
 - worked_examples: exactly 2 examples in genuine AP exam style. Each problem uses concrete numbers/functions/scenarios (like real released AP questions). Each solution shows the complete step-by-step work with LaTeX math in $...$ or $$...$$, ending with the final answer. Solutions must be fully worked, not descriptions of what to do.
-
+${LESSON_NOTES[COURSE_SUBJECT[courseCodeOf(topic)]] || ''}
 Return JSON only.`,
         response_json_schema: {
           type: 'object',

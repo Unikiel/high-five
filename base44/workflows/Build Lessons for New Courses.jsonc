@@ -1,0 +1,53 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "build_lessons_for_new_courses",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "write_lessons": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "enrichCourseContent",
+            "args": {
+              "limit": 4,
+              "course_ids": [
+                "AP_MICRO",
+                "AP_MACRO",
+                "AP_PSYCH",
+                "AP_USH"
+              ]
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Write lessons",
+            "description": "Next 4 topics"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Build Lessons for New Courses",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "after_count",
+      "ends_on_date": null,
+      "ends_after_count": 80
+    }
+  },
+  "description": "Writes the lesson content for AP Microeconomics, AP Macroeconomics, AP Psychology and AP United States History, four topics per run, until every topic is done"
+}

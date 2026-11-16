@@ -1,6 +1,5 @@
-import { InlineMath, BlockMath } from "react-katex";
 import { Card, CardContent } from "@/components/ui/card";
-import { looksLikeCode } from "@/lib/textFormat";
+import MathText from "@/components/MathText";
 
 function htmlToText(html) {
   return String(html || "")
@@ -15,28 +14,6 @@ function htmlToText(html) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/\\n(?![a-z])/g, "\n");
-}
-
-function renderMathText(text) {
-  const parts = String(text || "").split(/(\$\$[\s\S]+?\$\$|\$[^$]+?\$)/g).filter(Boolean);
-
-  return parts.map((part, index) => {
-    if (part.startsWith("$$") && part.endsWith("$$")) {
-      const inner = part.slice(2, -2).trim();
-      if (looksLikeCode(inner)) {
-        return <pre key={index} className="font-mono text-[0.95em] whitespace-pre-wrap text-foreground">{inner}</pre>;
-      }
-      return <BlockMath key={index} math={inner} />;
-    }
-    if (part.startsWith("$") && part.endsWith("$")) {
-      const inner = part.slice(1, -1).trim();
-      if (looksLikeCode(inner)) {
-        return <code key={index} className="font-mono text-[0.95em] px-1 rounded bg-muted/60 text-foreground">{inner}</code>;
-      }
-      return <InlineMath key={index} math={inner} />;
-    }
-    return <span key={index}>{part}</span>;
-  });
 }
 
 export default function RichTextRenderer({ html }) {
@@ -54,11 +31,11 @@ export default function RichTextRenderer({ html }) {
             if (heading) {
               return (
                 <h2 key={index} className="font-display text-lg sm:text-xl font-bold text-foreground pt-2">
-                  {renderMathText(heading[1])}
+                  <MathText text={heading[1]} />
                 </h2>
               );
             }
-            return <p key={index}>{renderMathText(paragraph.replace(/\*\*/g, ""))}</p>;
+            return <p key={index}><MathText text={paragraph.replace(/\*\*/g, "")} /></p>;
           })}
         </CardContent>
       </Card>

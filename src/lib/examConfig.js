@@ -10,6 +10,10 @@ export const REAL_EXAM_CONFIG = {
   AP_PRECALC: { questions: 40, minutes: 120 },
   AP_CSP: { questions: 70, minutes: 120 },
   AP_CSA: { questions: 40, minutes: 90 },
+  AP_MICRO: { questions: 60, minutes: 70 },
+  AP_MACRO: { questions: 60, minutes: 70 },
+  AP_PSYCH: { questions: 75, minutes: 90 },
+  AP_USH: { questions: 55, minutes: 55 },
 };
 
 export const DEFAULT_FULL_EXAM = { questions: 45, minutes: 90 };
