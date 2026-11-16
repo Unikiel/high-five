@@ -7,7 +7,7 @@ import { getDisplayName, getInitial } from "@/lib/userDisplay";
 import {
   Home, BookOpen, Target, TrendingUp, Calendar, 
   Settings, LogOut, Menu, X, Sun, Moon, Monitor,
-  GraduationCap, Users, CreditCard, ChevronDown, Shield, KeyRound
+  GraduationCap, Users, CreditCard, ChevronDown, Shield, KeyRound, PenLine
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ const ALL_NAV_ITEMS = [
   { path: "/dashboard", icon: Home, label: "Dashboard", page: "dashboard" },
   { path: "/courses", icon: BookOpen, label: "My Courses", page: "courses" },
   { path: "/practice", icon: Target, label: "Practice Exams", page: "practice" },
+  { path: "/free-response", icon: PenLine, label: "Free Response", page: "practice" },
   { path: "/progress", icon: TrendingUp, label: "My Progress", page: "progress" },
   { path: "/tutoring", icon: Calendar, label: "Tutoring", page: "tutoring" },
   { path: "/settings", icon: Settings, label: "Settings", page: "settings" },

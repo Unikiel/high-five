@@ -14,6 +14,7 @@ import RichTextRenderer from "@/components/lesson/RichTextRenderer";
 import FormulaList from "@/components/lesson/FormulaList";
 import QuickReference from "@/components/lesson/QuickReference";
 import InlineLessonEditor from "@/components/lesson/InlineLessonEditor";
+import TopicPractice from "@/components/lesson/TopicPractice";
 
 export default function TopicLesson() {
   const { courseCode, topicId } = useParams();
@@ -207,6 +208,8 @@ export default function TopicLesson() {
                   <p className="text-sm text-muted-foreground">No examples available.</p>
                 )}
               </section>
+
+              <TopicPractice topicId={topicId} />
             </>
           )}
         </div>

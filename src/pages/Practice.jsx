@@ -11,15 +11,18 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import BackLink from "@/components/BackLink";
 import { REAL_EXAM_CONFIG, DEFAULT_FULL_EXAM } from "@/lib/examConfig";
 
+// "written" is how many free-response questions the optional written section adds.
 const EXAM_TYPES = [
-  { id: "quick", label: "Quick Quiz", description: "10 questions, 15 min", questions: 10, minutes: 15, icon: Zap },
-  { id: "unit", label: "Unit Test", description: "20 questions, 30 min", questions: 20, minutes: 30, icon: BookOpen },
-  { id: "full", label: "Full AP Exam (MCQ)", description: "Real exam length & timing", questions: 45, minutes: 90, icon: Target },
-  { id: "adaptive", label: "Adaptive", description: "AI-adjusted difficulty", questions: 20, minutes: 30, icon: Brain },
+  { id: "quick", label: "Quick Quiz", description: "10 questions, 15 min", questions: 10, minutes: 15, written: 1, icon: Zap },
+  { id: "unit", label: "Unit Test", description: "20 questions, 30 min", questions: 20, minutes: 30, written: 2, icon: BookOpen },
+  { id: "full", label: "Full AP Exam (MCQ)", description: "Real exam length & timing", questions: 45, minutes: 90, written: 4, icon: Target },
+  { id: "adaptive", label: "Adaptive", description: "AI-adjusted difficulty", questions: 20, minutes: 30, written: 2, icon: Brain },
 ];
+const WRITTEN_MINUTES = 10;
 
 export default function Practice() {
   const { user } = useAuth();
@@ -33,6 +36,8 @@ export default function Practice() {
   const [enrollments, setEnrollments] = useState([]);
   const [recentExams, setRecentExams] = useState([]);
   const [starting, setStarting] = useState(false);
+  const [includeWritten, setIncludeWritten] = useState(true);
+  const writtenCount = EXAM_TYPES.find(t => t.id === selectedType).written;
 
   useEffect(() => {
     loadData();
@@ -75,7 +80,8 @@ export default function Practice() {
         type: selectedType === "full" ? "full" : selectedType === "unit" ? "unit" : "practice",
         status: "in_progress",
         total_questions: totalQuestions,
-        time_limit_minutes: timeLimit,
+        time_limit_minutes: timeLimit + (includeWritten ? writtenCount * WRITTEN_MINUTES : 0),
+        free_response_count: includeWritten ? writtenCount : 0,
         adaptive_difficulty: selectedType === "adaptive" ? "adaptive" : "medium",
         started_at: new Date().toISOString(),
         answers: {}
@@ -184,6 +190,18 @@ export default function Practice() {
                   );
                 })}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Written section</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Adds {writtenCount} free-response question{writtenCount === 1 ? "" : "s"}, graded by AI when you submit (+{writtenCount * WRITTEN_MINUTES} min)
+                </p>
+              </div>
+              <Switch checked={includeWritten} onCheckedChange={setIncludeWritten} />
             </CardContent>
           </Card>
 

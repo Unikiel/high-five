@@ -10,6 +10,22 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import MathText from "@/components/MathText";
+import shuffle from "lodash/shuffle";
+import { Textarea } from "@/components/ui/textarea";
+import ExamWrittenReview from "@/components/practice/ExamWrittenReview";
+
+const isWritten = (q) => q.type === "free_response";
+
+// A multiple-choice question is worth one point; a written question is worth one point per scoring-guide point.
+const tally = (questions, answers, written) => {
+  const choice = questions.filter(q => !isWritten(q));
+  const essays = questions.filter(isWritten);
+  const correct = choice.filter(q => answers[q.id] === q.ans).length;
+  const earned = essays.reduce((sum, q) => sum + (written[q.id]?.score || 0), 0);
+  const possible = essays.reduce((sum, q) => sum + q.rubric.length, 0);
+  const score = Math.round(((correct + earned) / (choice.length + possible)) * 100);
+  return { choice, essays, correct, earned, possible, score };
+};
 
 // Sample question generator (in production, questions come from DB via LLM)
 const generateSampleQuestions = (count, courseId) => {
@@ -64,6 +80,8 @@ export default function PracticeExam() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [written, setWritten] = useState({});
+  const [grading, setGrading] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -84,13 +102,11 @@ export default function PracticeExam() {
           const byId = new Map(questionBank.map(q => [q.id, q]));
           picked = e[0].questions.map(id => byId.get(id)).filter(Boolean);
         } else {
-          // New exam: draw a random selection from the bank
-          const shuffled = [...filteredBank];
-          for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-          }
-          picked = shuffled.slice(0, e[0].total_questions || 10);
+          // New exam: a random draw from the bank, multiple choice first, then the written section
+          picked = [
+            ...shuffle(filteredBank.filter(q => !isWritten(q))).slice(0, e[0].total_questions || 10),
+            ...shuffle(filteredBank.filter(isWritten)).slice(0, e[0].free_response_count || 0),
+          ];
           if (picked.length) {
             base44.entities.Exam.update(e[0].id, { questions: picked.map(q => q.id) }).catch(() => {});
           }
@@ -102,6 +118,8 @@ export default function PracticeExam() {
             opts: q.options || [],
             ans: q.correct_answer,
             exp: q.explanation,
+            type: q.type,
+            rubric: q.rubric || [],
             answered: null,
             number: index + 1
           }));
@@ -126,16 +144,29 @@ export default function PracticeExam() {
 
   const handleSubmit = async () => {
     clearInterval(timerRef.current);
-    const correct = questions.filter(q => answers[q.id] === q.ans).length;
-    const score = Math.round((correct / questions.length) * 100);
+    setGrading(true);
+    // Written answers are scored by AI; an unanswered one scores zero without a grading call.
+    const essays = questions.filter(isWritten);
+    const graded = await Promise.allSettled(essays.map(q =>
+      answers[q.id]?.trim()
+        ? base44.functions.invoke("gradeFreeResponse", { question_id: q.id, answer: answers[q.id] }).then(res => res.data)
+        : { score: 0, max: q.rubric.length, points: [], feedback: "" }
+    ));
+    const results = {};
+    essays.forEach((q, i) => {
+      if (graded[i].status === "fulfilled") results[q.id] = graded[i].value;
+    });
     try {
       await base44.entities.Exam.update(examId, {
         status: "completed",
-        score,
+        score: tally(questions, answers, results).score,
         answers,
+        free_response_results: results,
         completed_at: new Date().toISOString()
       });
     } catch (e) {}
+    setWritten(results);
+    setGrading(false);
     setSubmitted(true);
   };
 
@@ -160,9 +191,17 @@ export default function PracticeExam() {
     );
   }
 
+  if (grading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Scoring your exam...</p>
+      </div>
+    );
+  }
+
   if (submitted) {
-    const correct = questions.filter(q => answers[q.id] === q.ans).length;
-    const score = Math.round((correct / questions.length) * 100);
+    const { choice, essays, correct, earned, possible, score } = tally(questions, answers, written);
     return (
       <div className="p-6 max-w-2xl mx-auto space-y-6">
         <Card className="border-border/50">
@@ -173,10 +212,13 @@ export default function PracticeExam() {
                 : <AlertCircle className="w-10 h-10 text-red-500" />}
             </div>
             <h2 className="font-display text-3xl font-bold text-foreground mb-1">{score}%</h2>
-            <p className="text-muted-foreground">{correct}/{questions.length} questions correct</p>
+            <p className="text-muted-foreground">
+              {correct}/{choice.length} questions correct
+              {essays.length > 0 && ` · ${earned}/${possible} written points`}
+            </p>
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               <div><p className="text-2xl font-bold text-green-500">{correct}</p><p className="text-xs text-muted-foreground">Correct</p></div>
-              <div><p className="text-2xl font-bold text-red-500">{questions.length - correct}</p><p className="text-xs text-muted-foreground">Incorrect</p></div>
+              <div><p className="text-2xl font-bold text-red-500">{choice.length - correct}</p><p className="text-xs text-muted-foreground">Incorrect</p></div>
               <div><p className="text-2xl font-bold text-foreground">{score >= 70 ? "Pass" : "Retry"}</p><p className="text-xs text-muted-foreground">Result</p></div>
             </div>
             <div className="flex gap-3 mt-8">
@@ -189,7 +231,7 @@ export default function PracticeExam() {
         {/* Review */}
         <h3 className="font-display text-xl font-semibold">Review Answers</h3>
         <div className="space-y-4">
-          {questions.map((q, i) => {
+          {choice.map((q, i) => {
             const userAns = answers[q.id];
             const correct = userAns === q.ans;
             return (
@@ -209,6 +251,17 @@ export default function PracticeExam() {
             );
           })}
         </div>
+
+        {essays.length > 0 && (
+          <>
+            <h3 className="font-display text-xl font-semibold">Written Answers</h3>
+            <div className="space-y-4">
+              {essays.map((q, i) => (
+                <ExamWrittenReview key={q.id} question={q} number={choice.length + i + 1} answer={answers[q.id]} result={written[q.id]} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -276,6 +329,17 @@ export default function PracticeExam() {
               </button>
             </div>
 
+            {isWritten(q) ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Written response. Show your work; it is scored by AI when you submit the exam.</p>
+                <Textarea
+                  value={answered || ""}
+                  onChange={(e) => handleAnswer(q.id, e.target.value)}
+                  placeholder="Type your answer, labelling each part (a), (b), (c)..."
+                  className="min-h-56"
+                />
+              </div>
+            ) : (
             <div className="space-y-3">
               {q.opts.map((opt, i) => {
                 const letter = ["A", "B", "C", "D"][i];
@@ -299,6 +363,7 @@ export default function PracticeExam() {
                 );
               })}
             </div>
+            )}
           </CardContent>
         </Card>
 

@@ -26,6 +26,9 @@ export const COURSE_SUBJECT = {
   AP_USH: 'history',
 };
 
+/** Prompt rule for every generator: dollar amounts must not collide with the dollar signs that delimit LaTeX. */
+export const MONEY_RULE = `- Money: write dollar amounts as plain text with the dollar sign directly before the number (for example $5 or $2,000). Never put a money amount inside LaTeX math; in a formula that involves money, write the number without the dollar sign.`;
+
 /** Course.code of a Unit/Topic row: legacy rows hold it in course_id, newer rows in course_code. */
 export const courseCodeOf = (row) => row.course_code ?? row.course_id;
 

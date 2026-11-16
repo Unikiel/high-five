@@ -1,6 +1,4 @@
-import { COURSE_NAMES, COURSE_SUBJECT, courseCodeOf } from '../../shared/courseNames.ts';
-
-const MONEY_RULE = `- Money: write dollar amounts as plain text with the dollar sign directly before the number (for example $5 or $2,000). Never put a money amount inside LaTeX math; in a formula that involves money, write the number without the dollar sign.`;
+import { COURSE_NAMES, COURSE_SUBJECT, MONEY_RULE, courseCodeOf } from '../../shared/courseNames.ts';
 
 const QUESTION_NOTES = {
   economics: `

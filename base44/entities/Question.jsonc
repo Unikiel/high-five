@@ -43,7 +43,15 @@
       }
     },
     "correct_answer": {
-      "type": "string"
+      "type": "string",
+      "description": "Multiple choice: the letter of the correct option. Free response: the full-credit model answer"
+    },
+    "rubric": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Free response only: the scoring guide, one entry per point"
     },
     "explanation": {
       "type": "string"

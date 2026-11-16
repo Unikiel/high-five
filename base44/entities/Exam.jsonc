@@ -54,6 +54,14 @@
     "total_questions": {
       "type": "number"
     },
+    "free_response_count": {
+      "type": "number",
+      "description": "How many written questions the exam's free-response section holds"
+    },
+    "free_response_results": {
+      "type": "object",
+      "description": "AI scoring of each written answer, keyed by question id"
+    },
     "time_limit_minutes": {
       "type": "number"
     },

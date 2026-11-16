@@ -19,6 +19,7 @@ import CourseDetail from "@/pages/CourseDetail";
 import TopicLesson from "@/pages/TopicLesson";
 import Practice from "@/pages/Practice";
 import PracticeExam from "@/pages/PracticeExam";
+import FreeResponse from "@/pages/FreeResponse";
 import ProgressPage from "@/pages/ProgressPage";
 import Tutoring from "@/pages/Tutoring";
 import Settings from "@/pages/Settings";
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
             <Route path="/courses/:courseCode/topic/:topicId" element={<TopicLesson />} />
             <Route path="/practice" element={<Practice />} />
             <Route path="/practice/exam/:examId" element={<PracticeExam />} />
+            <Route path="/free-response" element={<FreeResponse />} />
             <Route path="/progress" element={<ProgressPage />} />
             <Route path="/tutoring" element={<Tutoring />} />
             <Route path="/settings" element={<Settings />} />

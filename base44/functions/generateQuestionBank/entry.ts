@@ -15,6 +15,7 @@ const DIFFICULTIES = ['easy', 'medium', 'hard'];
 const clean = (s) => String(s || '').replace(/\\n(?![a-z])/g, ' ').trim();
 
 // Questions hidden by the answer check do not count, so their topic gets replacements.
+// Written (free-response) questions have their own generator and do not count either.
 async function listActiveQuestions(api) {
   const out = [];
   for (let request = 0; request < MAX_PAGES; request++) {
@@ -22,7 +23,7 @@ async function listActiveQuestions(api) {
     if (page.length === 0) break;
     out.push(...page);
   }
-  return out.filter((q) => q.is_active !== false);
+  return out.filter((q) => q.is_active !== false && q.type !== 'free_response');
 }
 
 async function writeQuestions(base44, topics) {

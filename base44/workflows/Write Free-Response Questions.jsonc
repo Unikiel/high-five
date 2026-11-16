@@ -1,0 +1,47 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "write_free_response_questions",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "write_questions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateFreeResponse",
+            "args": {
+              "limit": 8
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Write written questions",
+            "description": "Next 8 topics"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "after_count",
+      "ends_on_date": null,
+      "ends_after_count": 130
+    }
+  },
+  "description": "Writes AP-style written questions, each with a scoring guide and a model answer, eight topics per run, until every topic in all 14 courses has two. Each one is audited independently before it is saved",
+  "name": "Write Free-Response Questions"
+}
