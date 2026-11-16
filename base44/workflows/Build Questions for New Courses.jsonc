@@ -1,37 +1,4 @@
 {
-  "definition": {
-    "document": {
-      "dsl": "1.0.0",
-      "name": "build_questions_for_new_courses",
-      "version": "1.0",
-      "namespace": "base44"
-    },
-    "do": [
-      {
-        "write_questions": {
-          "call": "invoke_backend_function",
-          "with": {
-            "function_name": "generateQuestionBank",
-            "args": {
-              "limit": 4,
-              "course_ids": [
-                "AP_MICRO",
-                "AP_MACRO",
-                "AP_PSYCH",
-                "AP_USH"
-              ]
-            }
-          },
-          "then": "end",
-          "x-base44": {
-            "title": "Write questions",
-            "description": "Next 4 topics"
-          }
-        }
-      }
-    ]
-  },
-  "name": "Build Questions for New Courses",
   "trigger": {
     "condition": null,
     "config": {
@@ -49,5 +16,38 @@
       "ends_after_count": 100
     }
   },
-  "description": "Writes AP-style practice questions for AP Microeconomics, AP Macroeconomics, AP Psychology and AP United States History, four topics per run, until every topic has nine"
+  "description": "Writes AP-style practice questions for AP Microeconomics, AP Macroeconomics, AP Psychology and AP United States History, eight topics per run, until every topic has nine answer-checked questions",
+  "name": "Build Questions for New Courses",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "build_questions_for_new_courses",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "write_questions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateQuestionBank",
+            "args": {
+              "limit": 8,
+              "course_ids": [
+                "AP_MICRO",
+                "AP_MACRO",
+                "AP_PSYCH",
+                "AP_USH"
+              ]
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Write questions",
+            "description": "Next 8 topics"
+          }
+        }
+      }
+    ]
+  }
 }

@@ -1,0 +1,59 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "after_count",
+      "ends_on_date": null,
+      "ends_after_count": 100
+    }
+  },
+  "description": "Brings every topic in the ten original AP courses up to nine answer-checked practice questions, eight topics per run",
+  "name": "Top Up Questions for Older Courses",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "top_up_questions_for_older_courses",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "write_questions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateQuestionBank",
+            "args": {
+              "limit": 8,
+              "course_ids": [
+                "AP_CALC_AB",
+                "AP_CALC_BC",
+                "AP_PHYSICS_1",
+                "AP_PHYSICS_2",
+                "AP_PHYSICS_CM",
+                "AP_PHYSICS_CE",
+                "AP_CSP",
+                "AP_CSA",
+                "AP_STATS",
+                "AP_PRECALC"
+              ]
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Write questions",
+            "description": "Next 8 topics"
+          }
+        }
+      }
+    ]
+  }
+}

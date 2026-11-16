@@ -57,6 +57,15 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once an independent re-solve agreed with correct_answer"
+    },
+    "review_note": {
+      "type": "string",
+      "description": "Why the answer check hid this question from exams"
     }
   },
   "required": [

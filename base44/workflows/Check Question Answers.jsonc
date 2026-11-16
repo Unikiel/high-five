@@ -1,0 +1,47 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": null,
+      "ends_type": "after_count",
+      "ends_on_date": null,
+      "ends_after_count": 30
+    }
+  },
+  "description": "Re-solves the existing practice questions without looking at the answer key, 96 per run. Questions whose key holds up are marked verified; the rest are hidden from exams with a note saying why",
+  "name": "Check Question Answers",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "check_question_answers",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check_answers": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "verifyQuestionBank",
+            "args": {
+              "limit": 96
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Check answers",
+            "description": "Next 96 questions"
+          }
+        }
+      }
+    ]
+  }
+}

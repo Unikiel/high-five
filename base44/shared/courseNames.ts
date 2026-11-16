@@ -29,8 +29,9 @@ export const COURSE_SUBJECT = {
 /** Course.code of a Unit/Topic row: legacy rows hold it in course_id, newer rows in course_code. */
 export const courseCodeOf = (row) => row.course_code ?? row.course_id;
 
-/** Optional request scope: { course_ids: [codes] } or { course_id: code }. No scope means every course. */
+/** Optional request scope: { topic_ids: [ids] }, { course_ids: [codes] } or { course_id: code }. No scope means every course. */
 export function courseScope(body) {
+  if (Array.isArray(body.topic_ids)) return (row) => body.topic_ids.includes(row.id);
   const codes = Array.isArray(body.course_ids) ? body.course_ids : body.course_id ? [body.course_id] : null;
   return (row) => !codes || codes.includes(courseCodeOf(row)) || codes.includes(row.course_id);
 }
